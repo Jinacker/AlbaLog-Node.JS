@@ -1,11 +1,11 @@
 {
-  "name": "node.js",
+  "name": "albalog",
   "version": "1.0.0",
-  "description": "",
+  "description": "UMC 9th Demoday Albalog BE",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npm run build && npm run routes && npm run start",
+    "dev": "npm run routes && npm run build && npm run start",
     "build": "npm run lint && tsc",
     "start": "node ./dist/app.js",
     "routes": "tsoa spec-and-routes",
