@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../node_modules/.prisma/client"
@@ -11,4 +5,222 @@ generator client {
 
 datasource db {
   provider = "mysql"
+}
+
+model alba_posting {
+  alba_id       Bytes           @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  store_id      Bytes           @db.Binary(16)
+  hourly_rate   Int?
+  total_wage    Int?
+  main_task     String?         @db.Text
+  requirement   String?         @db.Text
+  notification  String?         @db.Text
+  store         store           @relation(fields: [store_id], references: [store_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_store_TO_posting")
+  user_alba     user_alba[]
+  user_work_log user_work_log[]
+  work_schedule work_schedule?
+
+  @@index([store_id], map: "FK_store_TO_posting")
+}
+
+model category {
+  category_id   Int     @id @default(autoincrement())
+  category_name String? @db.Char(30)
+}
+
+model income_log {
+  income_log_id    Bytes         @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  user_id          Bytes         @db.Binary(16)
+  user_work_log_id Bytes         @db.Binary(16)
+  amount           Int?
+  income_date      DateTime?     @db.Date
+  user             user          @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_income_log")
+  user_work_log    user_work_log @relation(fields: [user_work_log_id], references: [user_work_log_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_work_log_TO_income")
+
+  @@index([user_id], map: "FK_user_TO_income_log")
+  @@index([user_work_log_id], map: "FK_work_log_TO_income")
+}
+
+model notification {
+  notification_id Bytes   @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  user_id         Bytes   @db.Binary(16)
+  message         String? @db.Text
+  user            user    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_notification")
+
+  @@index([user_id], map: "FK_user_TO_notification")
+}
+
+model notification_setting {
+  user_id                            Bytes    @id @db.Binary(16)
+  allow_all_notifications            Boolean?
+  work_related_notifications         Boolean?
+  commute_time_notifications         Boolean?
+  pre_work_notifications             Boolean?
+  substitute_recommend_notifications Boolean?
+  settlement_change_notifications    Boolean?
+  user                               user     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_noti_setting")
+}
+
+model region {
+  region_id Bytes   @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  city      String? @db.VarChar(10)
+  district  String? @db.VarChar(10)
+}
+
+model settlement_info {
+  user_id        Bytes   @id @db.Binary(16)
+  bank_name      String? @db.VarChar(10)
+  account_number String? @db.VarChar(30)
+  account_holder String? @db.VarChar(30)
+  user           user    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_settlement")
+}
+
+model store {
+  store_id       Bytes            @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  store_name     String?          @db.VarChar(30)
+  store_address  String?          @db.Text
+  latitude       Decimal?         @db.Decimal(10, 8)
+  longitude      Decimal?         @db.Decimal(11, 8)
+  alba_posting   alba_posting[]
+  store_category store_category[]
+  store_review   store_review[]
+}
+
+model store_category {
+  store_id    Bytes @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  category_id Int
+  store       store @relation(fields: [store_id], references: [store_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_store_TO_store_cat")
+
+  @@id([store_id, category_id])
+}
+
+model store_review {
+  review_id            Bytes   @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  store_id             Bytes   @db.Binary(16)
+  user_id              Bytes   @db.Binary(16)
+  total_score          Float?  @db.Float
+  kindness_rating      Float?  @db.Float
+  communication_rating Float?  @db.Float
+  settlement_rating    Float?  @db.Float
+  break_time_rating    Float?  @db.Float
+  review               String? @db.Text
+  store                store   @relation(fields: [store_id], references: [store_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_store_TO_review")
+  user                 user    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_review")
+
+  @@index([store_id], map: "FK_store_TO_review")
+  @@index([user_id], map: "FK_user_TO_review")
+}
+
+model user {
+  user_id              Bytes                 @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  user_name            String?               @db.VarChar(20)
+  user_birth           DateTime?             @db.Timestamp(0)
+  gender               user_gender?
+  profile_image        String?               @db.VarChar(256)
+  income_goal          Int?
+  income_log           income_log[]
+  notification         notification[]
+  notification_setting notification_setting?
+  settlement_info      settlement_info?
+  store_review         store_review[]
+  user_alba            user_alba[]
+  user_alba_schedule   user_alba_schedule[]
+  user_work_log        user_work_log[]
+}
+
+model user_alba {
+  user_id           Bytes                        @db.Binary(16)
+  alba_id           Bytes                        @db.Binary(16)
+  process_status    user_alba_process_status?
+  settlement_status user_alba_settlement_status?
+  alba_posting      alba_posting                 @relation(fields: [alba_id], references: [alba_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_posting_TO_user_alba")
+  user              user                         @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_user_alba")
+
+  @@id([user_id, alba_id])
+  @@index([alba_id], map: "FK_posting_TO_user_alba")
+}
+
+model user_alba_schedule {
+  user_alba_schedule_id Bytes                           @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  user_id               Bytes                           @db.Binary(16)
+  workplace             String?                         @db.VarChar(20)
+  work_date             String?                         @db.VarChar(20)
+  work_time             String?                         @db.VarChar(20)
+  day_of_week           user_alba_schedule_day_of_week?
+  repeat_type           user_alba_schedule_repeat_type?
+  repeat_days           String?                         @db.VarChar(10)
+  hourly_wage           Int?
+  memo                  String?                         @db.VarChar(256)
+  user                  user                            @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_alba_schedule")
+
+  @@index([user_id], map: "FK_user_TO_alba_schedule")
+}
+
+model user_work_log {
+  user_work_log_id      Bytes                 @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  user_id               Bytes                 @db.Binary(16)
+  alba_id               Bytes                 @db.Binary(16)
+  user_alba_schedule_id Bytes                 @db.Binary(16)
+  work_date             DateTime?             @db.Date
+  start_time            DateTime?             @db.DateTime(0)
+  end_time              DateTime?             @db.DateTime(0)
+  work_minutes          Int?
+  status                user_work_log_status?
+  income_log            income_log[]
+  alba_posting          alba_posting          @relation(fields: [alba_id], references: [alba_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_posting_TO_work_log")
+  user                  user                  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_work_log")
+
+  @@index([alba_id], map: "FK_posting_TO_work_log")
+  @@index([user_id], map: "FK_user_TO_work_log")
+}
+
+model work_schedule {
+  alba_id      Bytes        @id @db.Binary(16)
+  work_date    DateTime?    @db.Date
+  start_time   DateTime?    @db.DateTime(0)
+  end_time     DateTime?    @db.DateTime(0)
+  work_time    Float?       @db.Float
+  day_of_week  String?      @db.Char(10)
+  alba_posting alba_posting @relation(fields: [alba_id], references: [alba_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_posting_TO_work_schedule")
+}
+
+enum user_alba_process_status {
+  waiting
+  accepted
+  rejected
+}
+
+enum user_gender {
+  male
+  female
+}
+
+enum user_alba_settlement_status {
+  waiting
+  paid
+  unpaid
+}
+
+enum user_alba_schedule_day_of_week {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+enum user_alba_schedule_repeat_type {
+  none
+  daily
+  weekly
+  biweekly
+}
+
+enum user_work_log_status {
+  scheduled
+  working
+  done
+  settled
 }
