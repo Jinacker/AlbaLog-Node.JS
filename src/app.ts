@@ -5,6 +5,8 @@ import { RegisterRoutes } from './routes/tsoaRoutes';
 import * as swaggerUI from 'swagger-ui-express';
 import swaggerJson from './spec/swagger.json';
 import errorMiddleware from './middleware/error';
+import passport from 'passport';
+import { googleStrategy } from './config/auth';
 
 dotenv.config();
 
@@ -13,6 +15,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(passport.initialize());
+passport.use(googleStrategy);
+
+app.get(
+  '/api/user/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'], session: false }),
+);
+
+app.get(
+  '/api/user/auth/google/callback',
+  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+);
 
 // Routes
 RegisterRoutes(app);
