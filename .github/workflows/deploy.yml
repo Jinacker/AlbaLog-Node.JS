@@ -43,6 +43,11 @@ jobs:
         run: |
           ssh albalog "cat > /app/.env << END
           PORT=$PORT
+          DATABASE_URL=$DATABASE_URL
+          GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+          GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
+          JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET
+          JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET
           END"
 
           ssh albalog "cat > /app/.mysql_env << END
@@ -51,6 +56,11 @@ jobs:
         env:
           PORT: ${{secrets.PORT}}
           MYSQL_PASSWORD: ${{secrets.MYSQL_PASSWORD}}
+          DATABASE_URL: ${{secrets.DATABASE_URL}}
+          GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}}
+          GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET}}
+          JWT_ACCESS_SECRET: ${{secrets.JWT_ACCESS_SECRET}}
+          JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
 
       - name: Compose Docker
         run: |
