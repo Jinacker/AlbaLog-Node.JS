@@ -1,3 +1,8 @@
+export enum ResultType {
+  SUCCESS = 'SUCCESS',
+  FAIL = 'FAIL',
+}
+
 interface ITsoaResponse<T> {
   resultType: ResultType;
   error: {

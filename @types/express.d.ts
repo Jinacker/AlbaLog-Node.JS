@@ -10,12 +10,4 @@ declare global {
       user?: user;
     }
   }
-
-  /**
-   * ResultType을 type으로 명시
-   */
-  enum ResultType {
-    SUCCESS = 'SUCCESS',
-    FAIL = 'FAIL',
-  }
 }

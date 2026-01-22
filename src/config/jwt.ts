@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import prisma from './prisma';
 import uuid from 'uuid';
+import { InvalidTokenError } from '../DTO/errorDTO';
 
 /**
  * jwt 토큰 발급 함수
@@ -38,7 +39,7 @@ async function refreshTokens(refreshToken: string) {
   const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!);
 
   if (!decoded) {
-    throw new Error('Invalid refresh token');
+    throw new InvalidTokenError();
   }
 
   return generateTokens({ id: decoded.user_id, email: decoded.email });
