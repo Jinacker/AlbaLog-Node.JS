@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { CustomError } from '../DTO/errorDTO';
+import { CustomError } from '../DTO/error_dto';
 import { ValidateError } from 'tsoa';
 
 const errorMiddleware = (err: Error, req: Request, res: Response, next: NextFunction) => {

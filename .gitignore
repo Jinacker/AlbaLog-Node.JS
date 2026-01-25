@@ -1,5 +1,6 @@
 #personal preferences
 /.vscode
+/.claude
 
 # environment variable
 .env
