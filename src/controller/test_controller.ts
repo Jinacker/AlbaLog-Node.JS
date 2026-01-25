@@ -1,55 +1,40 @@
-import {Controller, Get, Post, Tags, Route, Body, SuccessResponse, Response} from 'tsoa';
-
-interface TestResponse {
-  message: string;
-  timestamp: string;
-}
-
-interface UserInfo {
-  userName: string;
-  age?: number;
-}
+import { Get, Tags, Route, SuccessResponse, Response } from 'tsoa';
+import prisma from '../config/prisma';
+import { TsoaFailResponse, TsoaSuccessResponse, ResultType } from '../config/response_interface';
+import { generateTokens } from '../config/jwt';
 
 @Route('api/test')
-@Tags('Test Controller')
-export class TestController extends Controller {
+@Tags('Test')
+export class TestController {
   /**
-   * 기본 테스트 API
+   * 테스트 유저 액세스 토큰 (Swagger 테스트 용)
    *
-   * @summary 서버 연결 테스트
-   * @returns 테스트 메시지
+   * @summary 테스트 유저의 액세스 토큰 발급
+   * @returns 테스트 유저의 액세스 토큰
    */
   @Get('/')
-  @SuccessResponse('200', 'API 테스트 성공')
-  public async getTest(): Promise<TestResponse> {
-    return {
-      message: 'Hello from Test Controller!',
-      timestamp: new Date().toISOString()
-    };
-  }
+  @SuccessResponse('200', 'Success')
+  @Response<TsoaFailResponse<string>>('401', 'Unauthorized', {
+    resultType: ResultType.FAIL,
+    error: {
+      errorCode: 'ERR-1',
+      errorMessage: 'Unauthorized',
+      data: null,
+    },
+    success: null,
+  })
+  public async getTest(): Promise<TsoaSuccessResponse<string>> {
+    const testUser = await prisma.user.findFirst({
+      where: {
+        user_name: 'test_user',
+      },
+    });
 
-  /**
-   * POST 요청 테스트 API
-   *
-   * @summary 유저 정보 테스트
-   * @param body 유저 정보
-   * @returns 유저 정보 응답
-   */
-  @Post('/user')
-  @SuccessResponse('200', '유저 정보 처리 성공')
-  @Response(400, 'Bad Request - 유저 이름이 필요합니다')
-  @Response(500, 'Internal Server Error')
-  public async testUserInfo(
-    @Body() body: UserInfo
-  ): Promise<TestResponse> {
-    if (!body.userName || body.userName === '') {
-      this.setStatus(400);
-      throw new Error('유저 이름이 필요합니다.');
-    }
+    const { accessToken } = await generateTokens({
+      id: testUser.user_id,
+      email: testUser.email,
+    });
 
-    return {
-      message: `안녕하세요, ${body.userName}님! ${body.age ? `나이: ${body.age}세` : ''}`,
-      timestamp: new Date().toISOString()
-    };
+    return new TsoaSuccessResponse(accessToken);
   }
 }

@@ -14,3 +14,9 @@ export class UserNotFoundError extends CustomError {
     super('USER_NOT_FOUND', 404, message, data);
   }
 }
+
+export class InvalidTokenError extends CustomError {
+  constructor(message: string = 'Invalid token', data: any = null) {
+    super('INVALID_TOKEN', 401, message, data);
+  }
+}

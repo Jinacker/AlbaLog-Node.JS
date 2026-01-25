@@ -120,7 +120,8 @@ model user {
   gender               user_gender?
   profile_image        String?               @db.VarChar(256)
   income_goal          Int?
-  email                String                @db.VarChar(40)
+  email                String                @unique(map: "user_pk") @db.VarChar(40)
+  refresh_token        String?               @unique(map: "user_pk_2") @db.VarChar(256)
   income_log           income_log[]
   notification         notification[]
   notification_setting notification_setting?
