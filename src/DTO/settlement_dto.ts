@@ -1,4 +1,4 @@
-export interface SettlementListResponse {
+export interface SettlementListResponseDTO {
   items: SettlementListItemDTO[];
   nextCursor?: string; // UUID string (work_log_id 기반 등)
   hasNext: boolean;
