@@ -4,7 +4,6 @@ import {
   SettlementSortQuery,
 } from '../controller/settlement_status_list_controller';
 import { settlementStatusListRepository } from '../repository/settlement_status_list_repository';
-// import { settlementRepository } from '../repositories/settlement.repository';
 
 interface ListMySettlementsParams {
   status: SettlementStatusQuery;
@@ -24,9 +23,6 @@ class SettlementStatusListService {
     const { status, sort, cursor, size } = params;
 
     const settlementStatusFilter = status === 'all' ? undefined : status;
-
-    const orderBy =
-      sort === 'latest' ? { work_date: 'desc' as const } : { work_date: 'asc' as const };
 
     const pageSize = Math.min(size, 20);
 

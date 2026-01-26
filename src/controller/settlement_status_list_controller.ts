@@ -1,6 +1,17 @@
-import { Controller, Get, Route, Request, Tags, Query, SuccessResponse, Response } from 'tsoa';
+import {
+  Controller,
+  Get,
+  Route,
+  Request,
+  Tags,
+  Query,
+  SuccessResponse,
+  Response,
+  Security,
+} from 'tsoa';
 import { SettlementListResponseDTO } from '../DTO/settlement_status_list_dto';
 import { Request as ExpressRequest } from 'express';
+import { settlementStatusListService } from '../service/settlement_status_list_service';
 
 /**
  * settlement Controller
@@ -12,8 +23,9 @@ import { Request as ExpressRequest } from 'express';
 export type SettlementStatusQuery = 'all' | 'waiting' | 'paid' | 'unpaid';
 export type SettlementSortQuery = 'latest' | 'oldest';
 
-@Route('api/settlements')
-@Tags('settlement')
+@Route('api/settlement-status-list')
+@Tags('settlement status list')
+@Security('jwt')
 export class SettlementStatusListController extends Controller {
   /**
    * 내 정산 상태 목록 조회
@@ -34,23 +46,18 @@ export class SettlementStatusListController extends Controller {
     @Query() cursor?: string,
     @Query() size: number = 20,
   ): Promise<SettlementListResponseDTO> {
-    const userId = (req as any).userId as string | undefined;
+    const userId: string | undefined = (req as any).userId ?? (req as any).user?.id;
 
     if (!userId) {
-      // 인증 미들웨어가 아직 없거나 userId를 주입하지 못한 경우
       this.setStatus(401);
-      return {
-        items: [],
-        hasNext: false,
-      };
+      return { items: [], hasNext: false };
     }
-    // TODO: Service 연결 후 실제 데이터 반환
-    // const result = await settlementService.listMySettlements(userId, { status, sort, cursor, size });
-    // return result;
 
-    return {
-      items: [],
-      hasNext: false,
-    };
+    return settlementStatusListService.listMySettlements(userId, {
+      status,
+      sort,
+      cursor,
+      size,
+    });
   }
 }

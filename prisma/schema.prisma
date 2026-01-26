@@ -95,19 +95,19 @@ model store_category {
 }
 
 model store_review {
-  review_id            Bytes    @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
-  store_id             Bytes    @db.Binary(16)
-  user_id              Bytes    @db.Binary(16)
-  total_score          Float?   @db.Float
-  kindness_rating      Float?   @db.Float
-  communication_rating Float?   @db.Float
-  settlement_rating    Float?   @db.Float
-  break_time_rating    Float?   @db.Float
-  review               String?  @db.Text
-  created_at           DateTime @default(now()) @db.Timestamp(0)
-  updated_at           DateTime @default(now()) @updatedAt @db.Timestamp(0)
-  store                store    @relation(fields: [store_id], references: [store_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_store_TO_review")
-  user                 user     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_review")
+  review_id            Bytes     @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  store_id             Bytes     @db.Binary(16)
+  user_id              Bytes     @db.Binary(16)
+  total_score          Float?    @db.Float
+  kindness_rating      Float?    @db.Float
+  communication_rating Float?    @db.Float
+  settlement_rating    Float?    @db.Float
+  break_time_rating    Float?    @db.Float
+  review               String?   @db.Text
+  created_at           DateTime? @default(now()) @db.Timestamp(0)
+  updated_at           DateTime? @default(now()) @updatedAt @db.Timestamp(0)
+  store                store     @relation(fields: [store_id], references: [store_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_store_TO_review")
+  user                 user      @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_review")
 
   @@index([store_id], map: "FK_store_TO_review")
   @@index([user_id], map: "FK_user_TO_review")

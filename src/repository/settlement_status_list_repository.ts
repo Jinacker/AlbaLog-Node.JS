@@ -1,5 +1,6 @@
 // src/repositories/settlement_status_list.repository.ts
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import prisma from '../config/prisma';
 import { SettlementListResponseDTO } from '../DTO/settlement_status_list_dto';
 import { uuidToBin, binToUuid } from '../util/uuid';
 
@@ -9,7 +10,7 @@ import {
   SettlementSortQuery,
 } from '../controller/settlement_status_list_controller';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 type SettlementStatusDb = Exclude<SettlementStatusQuery, 'all'>; // 'waiting' | 'paid' | 'unpaid'
 
