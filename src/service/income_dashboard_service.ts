@@ -1,21 +1,26 @@
 // income_dashboard_service.ts
-import { incomeDashboardRepository } from '../repository/income_dashboard_repository';
+import incomeDashboardRepository from '../repository/income_dashboard_repository';
+import { uuidToBuffer } from '../util/uuid_util'; // ✅ CHANGED: uuidToBin -> uuidToBuffer
 
 type GroupBy = 'store' | 'category';
 
 export class IncomeDashboardService {
-  public async getDashboard(userId: Buffer, month: string, groupBy: GroupBy) {
+  public async getDashboard(userId: string, month: string, groupBy: GroupBy) {
+    // ✅ CHANGED: UUID string -> Uint8Array(실제로는 Buffer지만 타입은 Uint8Array)
+    const userIdBin = uuidToBuffer(userId);
+
     const { start, end, normalizedMonth } = this.getMonthRange(month);
 
     const [workLogs, userAlbas] = await Promise.all([
-      incomeDashboardRepository.findWorkLogsForMonth(userId, start, end),
-      incomeDashboardRepository.findUserAlbaSettlementStatuses(userId),
+      // ✅ CHANGED: 레포가 Uint8Array 받도록 맞출 예정
+      incomeDashboardRepository.findWorkLogsForMonth(userIdBin, start, end),
+      incomeDashboardRepository.findUserAlbaSettlementStatuses(userIdBin),
     ]);
 
-    // alba_id -> settlement_status
     const settlementMap = new Map<string, string | null>();
     for (const ua of userAlbas) {
-      settlementMap.set(ua.alba_id.toString('hex'), ua.settlement_status ?? null);
+      // Bytes(hex 키) 통일 위해 Buffer로 감싸서 hex 생성
+      settlementMap.set(Buffer.from(ua.alba_id as any).toString('hex'), ua.settlement_status ?? null);
     }
 
     let expectedIncome = 0;
@@ -29,24 +34,21 @@ export class IncomeDashboardService {
 
       if (minutes <= 0 || hourlyRate <= 0) continue;
 
-      // 분 단위 시급 계산 (정수 원 단위로 반올림/버림 정책 필요)
       const income = Math.round((minutes * hourlyRate) / 60);
 
       expectedIncome += income;
 
-      const settlement = settlementMap.get(log.alba_id.toString('hex'));
+      const settlement = settlementMap.get(Buffer.from(log.alba_id as any).toString('hex'));
 
-      const isCompleted = settlement === 'COMPLETED'; // ✅ enum 값 너희 프로젝트에 맞춰 수정
+      const isCompleted = settlement === 'COMPLETED';
       if (!isCompleted) continue;
 
       actualIncome += income;
 
-      // breakdown
       if (groupBy === 'store') {
         const storeName = log.alba_posting?.store?.store_name ?? '기타';
         breakdownMap.set(storeName, (breakdownMap.get(storeName) ?? 0) + income);
       } else {
-        // category: 가게가 여러 카테고리면 여러번 더해짐(중복 집계 가능)
         const cats = log.alba_posting?.store?.store_category ?? [];
         if (cats.length === 0) {
           breakdownMap.set('uncategorized', (breakdownMap.get('uncategorized') ?? 0) + income);
@@ -72,16 +74,14 @@ export class IncomeDashboardService {
   }
 
   private getMonthRange(month?: string) {
-    // month: "YYYY-MM" 형태 기대
     const now = new Date();
     const y = month ? Number(month.slice(0, 4)) : now.getFullYear();
     const m = month ? Number(month.slice(5, 7)) : now.getMonth() + 1;
 
     const start = new Date(y, m - 1, 1);
-    const end = new Date(y, m, 1); // 다음달 1일 (lt end)
+    const end = new Date(y, m, 1);
 
     const normalizedMonth = `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}`;
-
     return { start, end, normalizedMonth };
   }
 }
