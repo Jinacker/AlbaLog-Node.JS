@@ -16,7 +16,7 @@ import { TsoaSuccessResponse, TsoaFailResponse } from '../config/response_interf
 //import { ITsoaErrorResponse } from '../config/response_interface';
 
 @Route('income')
-@Tags('Income')
+@Tags('Income Dashboard')
 export class IncomeDashboardController extends Controller {
   /**
    * 수입 대시보드 조회
