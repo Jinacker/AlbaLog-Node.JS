@@ -1,23 +1,26 @@
-// income_dashboard_service.ts
 import incomeDashboardRepository from '../repository/income_dashboard_repository';
+import { IncomeDashboardResponseDTO } from '../DTO/income_dashboard_dto';
 import { uuidToBuffer } from '../util/uuid_util';
 
 export class IncomeDashboardService {
-  public async getDashboard(userId: string, month: string) {
+  public async getDashboard(userId: string, month: string): Promise<IncomeDashboardResponseDTO> {
     const userIdBin = uuidToBuffer(userId);
 
     const { start, end, normalizedMonth } = this.getMonthRange(month);
 
-    const [workLogs, userAlbas] = await Promise.all([
+    const [workLogs, userAlbas, user] = await Promise.all([
       incomeDashboardRepository.findWorkLogsForMonth(userIdBin, start, end),
       incomeDashboardRepository.findUserAlbaSettlementStatuses(userIdBin),
+      incomeDashboardRepository.findUserIncomeGoal(userIdBin),
     ]);
+
+    const incomeGoal = user?.income_goal ?? 0;
 
     const settlementMap = new Map<string, string | null>();
     for (const ua of userAlbas) {
       settlementMap.set(
         Buffer.from(ua.alba_id as any).toString('hex'),
-        ua.settlement_status ?? null,
+        (ua.settlement_status as any) ?? null,
       );
     }
 
@@ -37,7 +40,7 @@ export class IncomeDashboardService {
 
       const settlement = settlementMap.get(Buffer.from(log.alba_id as any).toString('hex'));
 
-      const isCompleted = settlement === 'unpaid';
+      const isCompleted = settlement === 'paid';
       if (!isCompleted) continue;
 
       actualIncome += income;
@@ -54,6 +57,7 @@ export class IncomeDashboardService {
 
     return {
       month: normalizedMonth,
+      incomeGoal,
       expectedIncome,
       actualIncome,
       breakdown,
@@ -76,16 +80,10 @@ export class IncomeDashboardService {
     if (!storeName) return '기타';
 
     let name = storeName.trim();
+    name = name.replace(/\(.*?\)/g, '').trim(); // 괄호 제거
+    name = name.replace(/(점|지점|점포)$/g, '').trim(); // 접미 제거
 
-    // 괄호 제거: "이디야커피(상봉점)" → "이디야커피"
-    name = name.replace(/\(.*?\)/g, '').trim();
-
-    // 뒤쪽 "~점/~지점/~점포" 제거
-    name = name.replace(/(점|지점|점포)$/g, '').trim();
-
-    // 공백 기준 첫 토큰
     const firstToken = name.split(/\s+/)[0];
-
     return firstToken || '기타';
   }
 }
