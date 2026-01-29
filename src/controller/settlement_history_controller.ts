@@ -26,6 +26,13 @@ export class SettlementHistoryController extends Controller {
     @Path() userId: string,
     @Query() status: 'all' | 'waiting' | 'paid' | 'unpaid' = 'all',
   ): Promise<TsoaSuccessResponse<SettlementHistoryResponseDto>> {
+    // UUID 형식 검증
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(userId)) {
+      this.setStatus(400);
+      throw new Error('유효하지 않은 사용자 ID 형식입니다.');
+    }
+
     // UUID 문자열을 Buffer로 변환
     const userIdBuffer = uuidToBuffer(userId);
 

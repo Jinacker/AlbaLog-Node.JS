@@ -1,5 +1,5 @@
 import prisma from '../config/prisma';
-import { user_alba_settlement_status } from '../../node_modules/.prisma/client';
+import { user_alba_settlement_status } from '@prisma/client';
 
 /**
  * 정산 내역 Repository
@@ -37,7 +37,7 @@ class SettlementHistoryRepository {
   }
 
   /**
-   * income_log에서 실제 수입 조회
+   * income_log에서 실제 수입 조회 (alba_id 포함)
    * @param userId 사용자 ID
    */
   async findIncomeByUser(userId: Uint8Array) {
@@ -48,6 +48,11 @@ class SettlementHistoryRepository {
       select: {
         user_work_log_id: true,
         amount: true,
+        user_work_log: {
+          select: {
+            alba_id: true,
+          },
+        },
       },
     });
   }

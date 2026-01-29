@@ -24,12 +24,18 @@ class SettlementHistoryService {
       status,
     );
 
-    // income_log에서 실제 수입 조회
+    // income_log에서 실제 수입 조회 (alba_id 기준으로 매핑)
     const incomes = await SettlementHistoryRepository.findIncomeByUser(userId);
     const incomeMap = new Map<string, number>();
     for (const income of incomes) {
-      const key = Buffer.from(income.user_work_log_id).toString('hex');
-      incomeMap.set(key, income.amount || 0);
+      // alba_id를 키로 사용하여 매핑
+      const albaId = income.user_work_log?.alba_id;
+      if (albaId) {
+        const key = Buffer.from(albaId).toString('hex');
+        // 같은 alba_id에 대한 수입은 합산
+        const existing = incomeMap.get(key) || 0;
+        incomeMap.set(key, existing + (income.amount || 0));
+      }
     }
 
     // DTO 변환
