@@ -10,7 +10,10 @@ import {
   Query,
   SuccessResponse,
   Response,
+  Security,
+  Request,
 } from 'tsoa';
+import { Request as ExpressRequest } from 'express';
 import UserPreferredRegionService from '../service/user_preferred_region_service';
 import {
   UserPreferredRegionResponseDto,
@@ -40,22 +43,18 @@ export class UserPreferredRegionController extends Controller {
 
   /**
    * 주요 활동 지역 목록 조회 API
-   * @param userId 사용자 ID (UUID 문자열)
+   * @param req Express Request (JWT에서 userId 추출)
    * @returns 주요 활동 지역 목록
    */
-  @Get('{userId}/preferred-regions')
+  @Get('me/preferred-regions')
+  @Security('jwt')
   @SuccessResponse('200', '주요 활동 지역 조회 성공')
-  @Response(400, 'Bad Request')
-  @Response(404, 'User Not Found')
+  @Response(401, 'Unauthorized')
   @Response(500, 'Internal Server Error')
   public async getPreferredRegions(
-    @Path() userId: string,
+    @Request() req: ExpressRequest,
   ): Promise<TsoaSuccessResponse<UserPreferredRegionResponseDto>> {
-    // UUID 형식 검증
-    if (!this.validateUuid(userId)) {
-      this.setStatus(400);
-      throw new Error('유효하지 않은 사용자 ID 형식입니다.');
-    }
+    const userId = (req.user as unknown as { id: string }).id;
 
     const userIdBuffer = uuidToBuffer(userId);
     const result =
@@ -66,25 +65,23 @@ export class UserPreferredRegionController extends Controller {
 
   /**
    * 주요 활동 지역 추가 API
-   * @param userId 사용자 ID (UUID 문자열)
+   * @param req Express Request (JWT에서 userId 추출)
    * @param requestBody 추가할 지역 정보
    * @returns 추가된 지역 정보
    */
-  @Post('{userId}/preferred-regions')
+  @Post('me/preferred-regions')
+  @Security('jwt')
   @SuccessResponse('201', '주요 활동 지역 추가 성공')
   @Response(400, 'Bad Request - 최대 3개까지 설정 가능')
+  @Response(401, 'Unauthorized')
   @Response(404, 'Region Not Found')
   @Response(409, 'Conflict - 이미 등록된 지역')
   @Response(500, 'Internal Server Error')
   public async addPreferredRegion(
-    @Path() userId: string,
+    @Request() req: ExpressRequest,
     @Body() requestBody: AddPreferredRegionRequestDto,
   ): Promise<TsoaSuccessResponse<AddPreferredRegionResponseDto>> {
-    // UUID 형식 검증
-    if (!this.validateUuid(userId)) {
-      this.setStatus(400);
-      throw new Error('유효하지 않은 사용자 ID 형식입니다.');
-    }
+    const userId = (req.user as unknown as { id: string }).id;
 
     if (!this.validateUuid(requestBody.regionId)) {
       this.setStatus(400);
@@ -117,23 +114,21 @@ export class UserPreferredRegionController extends Controller {
 
   /**
    * 주요 활동 지역 삭제 API
-   * @param userId 사용자 ID (UUID 문자열)
+   * @param req Express Request (JWT에서 userId 추출)
    * @param regionId 지역 ID (UUID 문자열)
    */
-  @Delete('{userId}/preferred-regions/{regionId}')
+  @Delete('me/preferred-regions/{regionId}')
+  @Security('jwt')
   @SuccessResponse('204', '주요 활동 지역 삭제 성공')
   @Response(400, 'Bad Request')
+  @Response(401, 'Unauthorized')
   @Response(404, 'Not Found - 등록되지 않은 지역')
   @Response(500, 'Internal Server Error')
   public async removePreferredRegion(
-    @Path() userId: string,
+    @Request() req: ExpressRequest,
     @Path() regionId: string,
   ): Promise<void> {
-    // UUID 형식 검증
-    if (!this.validateUuid(userId)) {
-      this.setStatus(400);
-      throw new Error('유효하지 않은 사용자 ID 형식입니다.');
-    }
+    const userId = (req.user as unknown as { id: string }).id;
 
     if (!this.validateUuid(regionId)) {
       this.setStatus(400);
