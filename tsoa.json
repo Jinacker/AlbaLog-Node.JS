@@ -4,11 +4,19 @@
   "controllerPathGlobs": ["src/controller/*.ts"],
   "spec": {
     "outputDirectory": "src/spec",
-    "specVersion": 3
+    "specVersion": 3,
+    "securityDefinitions": {
+      "jwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
   },
   "routes": {
     "routesDir": "src/routes",
     "routesFileName": "tsoaRoutes.ts",
-    "middleware": "express"
+    "middleware": "express",
+    "authenticationModule": "src/config/tsoa_auth.ts"
   }
 }

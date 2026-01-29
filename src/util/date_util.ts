@@ -15,6 +15,19 @@ export function formatDate(date: Date): string {
 }
 
 /**
+ * DateTime을 "HH:mm" 형식으로 변환
+ * @param dateTime - 날짜/시간
+ * @returns "HH:mm" 형식 문자열
+ */
+export function formatTime(dateTime: Date | null): string {
+  if (!dateTime) return '';
+
+  const hours = String(dateTime.getHours()).padStart(2, '0');
+  const minutes = String(dateTime.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+/**
  * 생년월일에서 나이 계산
  * @param birthDate - 생년월일
  * @returns 나이
