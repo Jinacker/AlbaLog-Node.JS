@@ -59,15 +59,18 @@ class SettlementHistoryService {
       totalExpectedIncome += expectedIncome;
 
       // 실제 수입 (income_log에서 가져오거나 0)
-      const albaIdHex = Buffer.from(item.alba_id).toString('hex');
-      const actualIncome = incomeMap.get(albaIdHex) || 0;
+      let actualIncome = 0;
+      if (item.alba_id) {
+        const albaIdHex = Buffer.from(item.alba_id).toString('hex');
+        actualIncome = incomeMap.get(albaIdHex) || 0;
+      }
       totalActualIncome += actualIncome;
 
       return {
         workDate: workSchedule?.work_date
           ? formatDate(workSchedule.work_date)
           : '',
-        storeName: item.alba_posting.store.store_name || '',
+        storeName: item.alba_posting.store?.store_name || '',
         workMinutes,
         expectedIncome,
         actualIncome,
