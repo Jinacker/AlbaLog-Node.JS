@@ -1,4 +1,4 @@
-import { Controller, Get, Route, Tags, Query, SuccessResponse, Response } from 'tsoa';
+import { Controller, Get, Route, Tags, Query, SuccessResponse, Response, Security } from 'tsoa';
 import PlaceService from '../service/place_service';
 import { SearchPlaceResponseDto } from '../DTO/place_dto';
 import { TsoaSuccessResponse } from '../config/response_interface';
@@ -21,8 +21,10 @@ export class PlaceController extends Controller {
    * @returns 장소 검색 결과 목록
    */
   @Get('search')
+  @Security('jwt')
   @SuccessResponse('200', '장소 검색 성공')
   @Response(400, 'Bad Request - 검색어가 필요합니다')
+  @Response(401, 'Unauthorized')
   @Response(500, 'Internal Server Error')
   public async searchPlace(
     @Query() query: string,

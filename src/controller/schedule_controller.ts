@@ -1,4 +1,5 @@
-import { Controller, Post, Route, Tags, Path, Body, SuccessResponse, Response } from 'tsoa';
+import { Controller, Post, Route, Tags, Body, SuccessResponse, Response, Request, Security } from 'tsoa';
+import { Request as ExpressRequest } from 'express';
 import ScheduleService from '../service/schedule_service';
 import { CreateScheduleRequestDto, ScheduleResponseDto } from '../DTO/schedule_dto';
 import { TsoaSuccessResponse } from '../config/response_interface';
@@ -10,7 +11,7 @@ import { TsoaSuccessResponse } from '../config/response_interface';
  * 홈화면에서 간단하게 새 알바 일정을 추가할 수 있는 기능을 제공합니다.
  * 입력 항목: 근무지, 날짜, 시작/종료 시간, 시급, 메모
  */
-@Route('api/users')
+@Route('api/schedules')
 @Tags('Schedule')
 export class ScheduleController extends Controller {
   /**
@@ -19,23 +20,24 @@ export class ScheduleController extends Controller {
    * 홈화면에서 빠르게 알바 일정을 추가할 때 사용합니다.
    * 근무지, 날짜, 시간, 시급 정보를 입력받아 일정을 생성합니다.
    *
-   * @param userId - 사용자 ID (UUID 문자열)
    * @param requestBody - 일정 생성 요청 데이터
    * @returns 생성된 일정 정보 (예상 금액 포함)
    */
-  @Post('{userId}/schedules')
+  @Post('')
+  @Security('jwt')
   @SuccessResponse('201', '알바 일정 추가 성공')
   @Response(400, 'Bad Request - 필수 입력값 누락')
-  @Response(404, 'User Not Found')
+  @Response(401, 'Unauthorized')
   @Response(500, 'Internal Server Error')
   public async createSchedule(
-    @Path() userId: string,
+    @Request() req: ExpressRequest,
     @Body() requestBody: CreateScheduleRequestDto,
   ): Promise<TsoaSuccessResponse<ScheduleResponseDto>> {
     // 1. 필수 입력값 검증
     this.validateRequest(requestBody);
 
-    // 2. UUID 문자열을 Buffer로 변환
+    // 2. JWT에서 userId 추출 후 Buffer로 변환
+    const userId = (req.user as unknown as { id: string }).id;
     const userIdBuffer = this.uuidToBuffer(userId);
 
     // 3. 일정 생성 서비스 호출
