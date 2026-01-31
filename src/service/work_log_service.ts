@@ -15,6 +15,7 @@ const STATUS_LABELS: Record<string, string> = {
   working: '근무 중',
   done: '근무 완료',
   settled: '정산 완료',
+  absent: '결근',
 };
 
 /**
@@ -113,6 +114,27 @@ class WorkLogService {
 
     console.log(`[Scheduler] ${expiredLogs.length}개의 근무 기록이 자동 퇴근 처리되었습니다.`);
     return expiredLogs.length;
+  }
+
+  /**
+   * 출근 시간이 지났는데 scheduled 상태 → absent(결근)로 일괄 변경
+   * 스케줄러에서 호출
+   * @returns 결근 처리된 근무 기록 수
+   */
+  async autoMarkAbsentLogs(): Promise<number> {
+    // 1. 출근 시간이 지난 scheduled 상태 조회
+    const absentCandidates = await WorkLogRepository.findAbsentCandidateLogs();
+
+    if (absentCandidates.length === 0) {
+      return 0;
+    }
+
+    // 2. 일괄 상태 업데이트 (scheduled → absent)
+    const workLogIds = absentCandidates.map((log) => log.user_work_log_id);
+    await WorkLogRepository.updateManyStatus(workLogIds, 'absent');
+
+    console.log(`[Scheduler] ${absentCandidates.length}개의 근무 기록이 결근 처리되었습니다.`);
+    return absentCandidates.length;
   }
 
   /**

@@ -73,6 +73,22 @@ class WorkLogRepository {
       data: { status },
     });
   }
+
+  /**
+   * 출근 시간이 지난 scheduled 상태의 근무 기록 조회 (결근 처리 대상)
+   * @returns 출근 시간이 지난 scheduled 상태의 근무 기록 목록
+   */
+  async findAbsentCandidateLogs() {
+    const now = new Date();
+    return await prisma.user_work_log.findMany({
+      where: {
+        status: 'scheduled',
+        start_time: {
+          lte: now,
+        },
+      },
+    });
+  }
   /**
    * 특정 날짜의 사용자 근무 기록 조회 (user_work_log 기반)
    * @param userId - 사용자 ID (Binary(16) UUID)
