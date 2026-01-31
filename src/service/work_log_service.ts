@@ -1,5 +1,9 @@
 import WorkLogRepository from '../repository/work_log_repository';
-import { TodayScheduleResponseDto, TodayWorkListResponseDto } from '../DTO/work_log_dto';
+import {
+  TodayScheduleResponseDto,
+  TodayWorkListResponseDto,
+  CheckInResponseDto,
+} from '../DTO/work_log_dto';
 import { bufferToUuid } from '../util/uuid_util';
 import { formatDate } from '../util/date_util';
 
@@ -59,6 +63,56 @@ class WorkLogService {
       schedules: scheduleDtos,
       totalCount: scheduleDtos.length,
     };
+  }
+
+  /**
+   * 출근하기 (status: scheduled → working)
+   * @param workLogId - 근무 기록 ID (Buffer)
+   * @returns 업데이트된 근무 기록 정보
+   */
+  async checkIn(workLogId: Uint8Array): Promise<CheckInResponseDto> {
+    // 1. 근무 기록 조회
+    const workLog = await WorkLogRepository.findById(workLogId);
+
+    if (!workLog) {
+      throw new Error('근무 기록을 찾을 수 없습니다.');
+    }
+
+    // 2. 상태 검증 (scheduled 상태에서만 출근 가능)
+    if (workLog.status !== 'scheduled') {
+      throw new Error(`출근할 수 없는 상태입니다. 현재 상태: ${workLog.status}`);
+    }
+
+    // 3. 상태 업데이트 (scheduled → working)
+    const updatedLog = await WorkLogRepository.updateStatus(workLogId, 'working');
+
+    return {
+      workLogId: bufferToUuid(updatedLog.user_work_log_id),
+      status: 'working',
+      statusLabel: STATUS_LABELS['working'],
+      message: '출근 처리되었습니다.',
+    };
+  }
+
+  /**
+   * 퇴근 시간이 지난 working 상태 → done으로 일괄 변경
+   * 스케줄러에서 호출
+   * @returns 업데이트된 근무 기록 수
+   */
+  async autoCheckOutExpiredLogs(): Promise<number> {
+    // 1. 퇴근 시간이 지난 working 상태 조회
+    const expiredLogs = await WorkLogRepository.findExpiredWorkingLogs();
+
+    if (expiredLogs.length === 0) {
+      return 0;
+    }
+
+    // 2. 일괄 상태 업데이트 (working → done)
+    const workLogIds = expiredLogs.map((log) => log.user_work_log_id);
+    await WorkLogRepository.updateManyStatus(workLogIds, 'done');
+
+    console.log(`[Scheduler] ${expiredLogs.length}개의 근무 기록이 자동 퇴근 처리되었습니다.`);
+    return expiredLogs.length;
   }
 
   /**

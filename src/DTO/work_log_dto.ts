@@ -21,3 +21,13 @@ export interface TodayWorkListResponseDto {
   schedules: TodayScheduleResponseDto[];
   totalCount: number;
 }
+
+/**
+ * 출근하기 응답 DTO
+ */
+export interface CheckInResponseDto {
+  workLogId: string;
+  status: 'working';
+  statusLabel: string; // "근무 중"
+  message: string; // "출근 처리되었습니다."
+}
