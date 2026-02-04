@@ -7,6 +7,89 @@ import { user_work_log_status } from '@prisma/client';
  */
 class WorkLogRepository {
   /**
+   * work_log ID로 단일 조회
+   * @param workLogId - 근무 기록 ID (Buffer)
+   * @returns 근무 기록
+   */
+  async findById(workLogId: Uint8Array) {
+    return await prisma.user_work_log.findUnique({
+      where: { user_work_log_id: workLogId as Uint8Array<ArrayBuffer> },
+      include: {
+        alba_posting: {
+          select: {
+            hourly_rate: true,
+            store: {
+              select: {
+                store_name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * 근무 상태 업데이트
+   * @param workLogId - 근무 기록 ID (Buffer)
+   * @param status - 변경할 상태
+   * @returns 업데이트된 근무 기록
+   */
+  async updateStatus(workLogId: Uint8Array, status: user_work_log_status) {
+    return await prisma.user_work_log.update({
+      where: { user_work_log_id: workLogId as Uint8Array<ArrayBuffer> },
+      data: { status },
+    });
+  }
+
+  /**
+   * 퇴근 시간이 지난 working 상태의 근무 기록 조회
+   * @returns 퇴근 시간이 지난 working 상태의 근무 기록 목록
+   */
+  async findExpiredWorkingLogs() {
+    const now = new Date();
+    return await prisma.user_work_log.findMany({
+      where: {
+        status: 'working',
+        end_time: {
+          lte: now,
+        },
+      },
+    });
+  }
+
+  /**
+   * 여러 근무 기록의 상태를 일괄 업데이트
+   * @param workLogIds - 근무 기록 ID 배열
+   * @param status - 변경할 상태
+   */
+  async updateManyStatus(workLogIds: Uint8Array[], status: user_work_log_status) {
+    return await prisma.user_work_log.updateMany({
+      where: {
+        user_work_log_id: {
+          in: workLogIds as Uint8Array<ArrayBuffer>[],
+        },
+      },
+      data: { status },
+    });
+  }
+
+  /**
+   * 출근 시간이 지난 scheduled 상태의 근무 기록 조회 (결근 처리 대상)
+   * @returns 출근 시간이 지난 scheduled 상태의 근무 기록 목록
+   */
+  async findAbsentCandidateLogs() {
+    const now = new Date();
+    return await prisma.user_work_log.findMany({
+      where: {
+        status: 'scheduled',
+        start_time: {
+          lte: now,
+        },
+      },
+    });
+  }
+  /**
    * 특정 날짜의 사용자 근무 기록 조회 (user_work_log 기반)
    * @param userId - 사용자 ID (Binary(16) UUID)
    * @param date - 조회할 날짜

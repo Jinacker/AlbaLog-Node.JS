@@ -3,8 +3,8 @@
  */
 export interface TodayScheduleResponseDto {
   workLogId: string;
-  status: 'scheduled' | 'working' | 'done' | 'settled';
-  statusLabel: string; // "예정", "근무 중", "근무 완료", "정산 완료"
+  status: 'scheduled' | 'working' | 'done' | 'settled' | 'absent';
+  statusLabel: string; // "예정", "근무 중", "근무 완료", "정산 완료", "결근"
   workplace: string; // "CU 홍대 점"
   startTime: string; // "14:00"
   endTime: string; // "18:00"
@@ -20,4 +20,14 @@ export interface TodayWorkListResponseDto {
   date: string; // "2026-01-24"
   schedules: TodayScheduleResponseDto[];
   totalCount: number;
+}
+
+/**
+ * 출근하기 응답 DTO
+ */
+export interface CheckInResponseDto {
+  workLogId: string;
+  status: 'working';
+  statusLabel: string; // "근무 중"
+  message: string; // "출근 처리되었습니다."
 }

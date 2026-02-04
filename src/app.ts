@@ -8,6 +8,7 @@ import errorMiddleware from './middleware/error';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import { googleStrategy } from './config/auth';
+import { initWorkLogScheduler } from './scheduler/work_log_scheduler';
 
 dotenv.config();
 
@@ -43,6 +44,9 @@ app.use('/', (req, res) => {
 
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Server is running on port ${process.env.PORT || 3000}`);
+
+  // 스케줄러 초기화 (퇴근 시간 자동 처리)
+  initWorkLogScheduler();
 });
 
 // 에러 핸들링 미들웨어
