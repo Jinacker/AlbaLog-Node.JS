@@ -6,18 +6,16 @@ import { StoreReviewRequestDto } from "../DTO/store_review_dto";
  * @param data
  * @returns 리뷰 상세 정보 및 연관 데이터
  */
-export const createStoreReview = async (data:StoreReviewRequestDto) =>{
-    const {userId,storeId,communication,settlement,rest,kindness,review} =data;
-    //UUID 문자열 Buffer로 변환
-    const userBuffer=Buffer.from(userId.replace(/-/g, ""), 'hex');
-    const storeBuffer=Buffer.from(storeId.replace(/-/g, ""), 'hex');
+export const createStoreReview = async (userBuffer:Buffer,storeBuffer:Buffer,data:StoreReviewRequestDto) =>{
+    const {communication,settlement,rest,kindness,review} =data;
+    
     //4가지 평가지표의 평균. 표현은 소수점 첫째자리까지
     const totalScore = Number(((communication+kindness+settlement+rest)/4).toFixed(1));
     
     const result = await prisma.store_review.create({
         data:{
-            user_id:userBuffer,
-            store_id:storeBuffer,
+            user_id:new Uint8Array(userBuffer),
+            store_id:new Uint8Array(storeBuffer),
             kindness_rating:kindness,
             settlement_rating:settlement,
             communication_rating:communication,
@@ -33,9 +31,9 @@ export const createStoreReview = async (data:StoreReviewRequestDto) =>{
     });
 
     return {
-    reviewId:Buffer.from(result.review_id).toString('hex'),
-    userId,
-    storeId,
+    reviewId:result.review_id,
+    userBuffer,
+    storeBuffer,
     userName:result.user.user_name,
     storeName:result.store.store_name,
     totalScore,
