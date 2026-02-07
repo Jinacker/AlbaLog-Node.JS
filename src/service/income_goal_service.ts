@@ -12,10 +12,6 @@ class IncomeGoalService {
   }): Promise<UpdateIncomeGoalResponseDTO> {
     const { userIdUuid, incomeGoal } = params;
 
-    if (!userIdUuid) {
-      throw new CustomError('EC400', 400, 'userId가 전달되지 않았습니다.', null);
-    }
-
     if (incomeGoal !== null) {
       if (typeof incomeGoal !== 'number' || Number.isNaN(incomeGoal)) {
         throw new CustomError('EC400', 400, 'incomeGoal은 숫자여야 합니다.', null);
