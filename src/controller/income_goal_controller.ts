@@ -16,7 +16,7 @@ import { TsoaSuccessResponse, TsoaFailResponse } from '../config/response_interf
 import { UpdateIncomeGoalRequestDTO, UpdateIncomeGoalResponseDTO } from '../DTO/income_goal_dto';
 import { incomeGoalService } from '../service/income_goal_service';
 
-@Route('users')
+@Route('api/users')
 @Tags('Income Goal')
 export class IncomeGoalController extends Controller {
   /**
@@ -30,10 +30,19 @@ export class IncomeGoalController extends Controller {
     error: { errorCode: 'EC401', errorMessage: '인증이 필요합니다.', data: null },
     success: null,
   })
+  @Response<TsoaFailResponse<any>>(500, 'Internal Server Error', {
+    resultType: 'FAIL' as any,
+    error: {
+      errorCode: 'EC500',
+      errorMessage: '서버 오류가 발생했습니다.',
+      data: null,
+    },
+    success: null,
+  })
   public async updateMyIncomeGoal(
     @Request() req: ExpressRequest,
     @Body() body: UpdateIncomeGoalRequestDTO,
-  ): Promise<UpdateIncomeGoalResponseDTO> {
+  ): Promise<TsoaSuccessResponse<UpdateIncomeGoalResponseDTO>> {
     const userUuid = (req as any).user?.id as string;
 
     if (!userUuid) {
@@ -42,11 +51,11 @@ export class IncomeGoalController extends Controller {
     }
 
     const result = await incomeGoalService.updateMyIncomeGoal({
-      userUuid,
+      userIdUuid: userUuid,
       incomeGoal: body.incomeGoal,
     });
 
     this.setStatus(200);
-    return result;
+    return new TsoaSuccessResponse(result);
   }
 }

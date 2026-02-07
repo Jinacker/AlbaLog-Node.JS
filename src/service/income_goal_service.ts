@@ -30,7 +30,7 @@ class IncomeGoalService {
     const userIdBin = uuidToBuffer(userIdUuid);
 
     const updated = await incomeGoalRepository.updateIncomeGoal({
-      userIdBin,
+      userId: userIdBin,
       incomeGoal,
     });
 
