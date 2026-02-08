@@ -65,7 +65,7 @@ model region {
   region_id             Int                     @id
   city                  String                  @db.VarChar(20)
   district              String                  @db.VarChar(20)
-  store                 store?
+  store                 store[]
   user_preferred_region user_preferred_region[]
 }
 
@@ -95,11 +95,13 @@ model store {
   store_address  String?          @db.Text
   latitude       Decimal?         @db.Decimal(10, 8)
   longitude      Decimal?         @db.Decimal(11, 8)
-  region_id      Int?             @unique(map: "region_id")
+  region_id      Int?             
   alba_posting   alba_posting[]
-  region         region?          @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_store_region")
+  region    region? @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_store_region")
   store_category store_category[]
   store_review   store_review[]
+
+   @@index([region_id], map: "idx_store_region_id")
 }
 
 model store_category {
