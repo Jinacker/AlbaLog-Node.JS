@@ -102,7 +102,8 @@ class WorkLogRepository {
     {
       user_work_log_id: Uint8Array;
       user_id: Uint8Array;
-      alba_id: Uint8Array;
+      alba_id: Uint8Array | null;
+      user_alba_schedule_id: Uint8Array | null;
       work_date: Date | null;
       start_time: Date | null;
       end_time: Date | null;
@@ -113,7 +114,7 @@ class WorkLogRepository {
         store: {
           store_name: string | null;
         };
-      };
+      } | null;
     }[]
   > {
     // 날짜 범위 설정 (해당 날짜의 00:00:00 ~ 23:59:59)
