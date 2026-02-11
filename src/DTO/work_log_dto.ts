@@ -31,3 +31,13 @@ export interface CheckInResponseDto {
   statusLabel: string; // "근무 중"
   message: string; // "출근 처리되었습니다."
 }
+
+/**
+ * 퇴근하기 응답 DTO
+ */
+export interface CheckOutResponseDto {
+  workLogId: string;
+  status: 'done';
+  statusLabel: string; // "근무 완료"
+  message: string; // "퇴근 처리되었습니다."
+}

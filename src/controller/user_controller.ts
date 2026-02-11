@@ -71,8 +71,6 @@ export class UserController {
       throw new UserNotFoundError();
     }
 
-    console.log(refreshToken);
-
     const result = await UserService.refreshAccessTokenService(refreshToken);
 
     return new TsoaSuccessResponse<string>(result);

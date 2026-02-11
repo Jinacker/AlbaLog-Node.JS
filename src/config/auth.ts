@@ -11,7 +11,6 @@ export const googleStrategy = new GoogleStrategy(
     callbackURL: '/api/user/auth/google/callback',
   },
   async (accessToken, refreshToken, profile, done) => {
-    console.log('google profile: ', profile);
     try {
       const isExist = await prisma.user.findFirst({
         where: {
@@ -30,7 +29,6 @@ export const googleStrategy = new GoogleStrategy(
           },
         });
 
-        console.log('new user: ', newUser);
         done(null, newUser);
       }
     } catch (error) {

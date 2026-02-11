@@ -3,6 +3,7 @@ import {
   TodayScheduleResponseDto,
   TodayWorkListResponseDto,
   CheckInResponseDto,
+  CheckOutResponseDto,
 } from '../DTO/work_log_dto';
 import { bufferToUuid } from '../util/uuid_util';
 import { formatDate } from '../util/date_util';
@@ -98,6 +99,41 @@ class WorkLogService {
       status: 'working',
       statusLabel: STATUS_LABELS['working'],
       message: '출근 처리되었습니다.',
+    };
+  }
+
+  /**
+   * 퇴근하기 (status: working → done)
+   * @param workLogId - 근무 기록 ID (Buffer)
+   * @param userId - 사용자 ID (Buffer) - 권한 검증용
+   * @returns 업데이트된 근무 기록 정보
+   */
+  async checkOut(workLogId: Uint8Array, userId: Uint8Array): Promise<CheckOutResponseDto> {
+    // 1. 근무 기록 조회
+    const workLog = await WorkLogRepository.findById(workLogId);
+
+    if (!workLog) {
+      throw new Error('근무 기록을 찾을 수 없습니다.');
+    }
+
+    // 2. 권한 검증 (본인의 근무 기록인지 확인)
+    if (Buffer.from(workLog.user_id).toString('hex') !== Buffer.from(userId).toString('hex')) {
+      throw new Error('본인의 근무 기록만 퇴근 처리할 수 있습니다.');
+    }
+
+    // 3. 상태 검증 (working 상태에서만 퇴근 가능)
+    if (workLog.status !== 'working') {
+      throw new Error(`퇴근할 수 없는 상태입니다. 현재 상태: ${workLog.status}`);
+    }
+
+    // 4. 상태 업데이트 (working → done)
+    const updatedLog = await WorkLogRepository.updateStatus(workLogId, 'done');
+
+    return {
+      workLogId: bufferToUuid(updatedLog.user_work_log_id),
+      status: 'done',
+      statusLabel: STATUS_LABELS['done'],
+      message: '퇴근 처리되었습니다.',
     };
   }
 
