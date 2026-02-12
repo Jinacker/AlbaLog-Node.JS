@@ -127,29 +127,26 @@ export class UserPreferredRegionController extends Controller {
   }
 }
 
-// /**
-//  * 지역 검색 Controller
-//  */
-// @Route('api/regions')
-// @Tags('Region')
-// export class RegionController extends Controller {
-//   /**
-//    * 지역 목록 검색 API
-//    * @param city 시/도 (선택)
-//    * @param district 구/군 (선택)
-//    * @returns 지역 목록
-//    */
-//   @Get('')
-//   @SuccessResponse('200', '지역 목록 조회 성공')
-//   @Response(500, 'Internal Server Error')
-//   public async searchRegions(
-//     @Query() city?: string,
-//     @Query() district?: string,
-//   ): Promise<TsoaSuccessResponse<RegionListResponseDto>> {
-//     const result = await UserPreferredRegionService.searchRegions(
-//       city,
-//       district,
-//     );
-//     return new TsoaSuccessResponse(result);
-//   }
-// }
+/**
+ * 지역 검색 Controller
+ */
+@Route('api/regions')
+@Tags('Region')
+export class RegionsController extends Controller {
+  /**
+   * 지역 목록 검색 API
+   * @param city 시/도 (선택)
+   * @param district 구/군 (선택)
+   * @returns 지역 목록
+   */
+  @Get('')
+  @SuccessResponse('200', '지역 목록 조회 성공')
+  @Response(500, 'Internal Server Error')
+  public async searchRegions(
+    @Query() city?: string,
+    @Query() district?: string,
+  ): Promise<TsoaSuccessResponse<RegionListResponseDto>> {
+    const result = await UserPreferredRegionService.searchRegions(city, district);
+    return new TsoaSuccessResponse(result);
+  }
+}
