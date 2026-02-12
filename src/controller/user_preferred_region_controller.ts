@@ -1,28 +1,28 @@
-// import {
-//   Controller,
-//   Get,
-//   Post,
-//   Delete,
-//   Route,
-//   Tags,
-//   Path,
-//   Body,
-//   Query,
-//   SuccessResponse,
-//   Response,
-//   Security,
-//   Request,
-// } from 'tsoa';
-// import { Request as ExpressRequest } from 'express';
-// import UserPreferredRegionService from '../service/user_preferred_region_service';
-// import {
-//   UserPreferredRegionResponseDto,
-//   AddPreferredRegionRequestDto,
-//   AddPreferredRegionResponseDto,
-//   RegionListResponseDto,
-// } from '../DTO/user_preferred_region_dto';
-// import { TsoaSuccessResponse } from '../config/response_interface';
-// import { uuidToBuffer } from '../util/uuid_util';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Route,
+  Tags,
+  Path,
+  Body,
+  Query,
+  SuccessResponse,
+  Response,
+  Security,
+  Request,
+} from 'tsoa';
+import { Request as ExpressRequest } from 'express';
+import UserPreferredRegionService from '../service/user_preferred_region_service';
+import {
+  UserPreferredRegionResponseDto,
+  AddPreferredRegionRequestDto,
+  AddPreferredRegionResponseDto,
+  RegionListResponseDto,
+} from '../DTO/user_preferred_region_dto';
+import { TsoaSuccessResponse } from '../config/response_interface';
+import { uuidToBuffer } from '../util/uuid_util';
 
 /**
  * 주요 활동 지역 Controller
@@ -46,12 +46,11 @@ export class UserPreferredRegionController extends Controller {
   ): Promise<TsoaSuccessResponse<UserPreferredRegionResponseDto>> {
     const userId = (req.user as unknown as { id: string }).id;
 
-//     const userIdBuffer = uuidToBuffer(userId);
-//     const result =
-//       await UserPreferredRegionService.getPreferredRegions(userIdBuffer);
+    const userIdBuffer = uuidToBuffer(userId);
+    const result = await UserPreferredRegionService.getPreferredRegions(userIdBuffer);
 
-//     return new TsoaSuccessResponse(result);
-//   }
+    return new TsoaSuccessResponse(result);
+  }
 
   /**
    * 주요 활동 지역 추가 API
@@ -117,10 +116,7 @@ export class UserPreferredRegionController extends Controller {
     const userIdBuffer = uuidToBuffer(userId);
 
     try {
-      await UserPreferredRegionService.removePreferredRegion(
-        userIdBuffer,
-        regionId,
-      );
+      await UserPreferredRegionService.removePreferredRegion(userIdBuffer, regionId);
       this.setStatus(204);
     } catch (error) {
       if (error instanceof Error && error.message.includes('등록되지 않은')) {

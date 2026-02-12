@@ -1,38 +1,38 @@
-// import prisma from '../config/prisma';
+import prisma from '../config/prisma';
 
-// /**
-//  * 주요 활동 지역 Repository
-//  */
-// class UserPreferredRegionRepository {
-//   /**
-//    * 사용자의 주요 활동 지역 목록 조회
-//    * @param userId 사용자 ID (Buffer)
-//    */
-//   async findByUserId(userId: Uint8Array) {
-//     return await prisma.user_preferred_region.findMany({
-//       where: {
-//         user_id: userId as Uint8Array<ArrayBuffer>,
-//       },
-//       include: {
-//         region: true,
-//       },
-//       orderBy: {
-//         created_at: 'desc',
-//       },
-//     });
-//   }
+/**
+ * 주요 활동 지역 Repository
+ */
+class UserPreferredRegionRepository {
+  /**
+   * 사용자의 주요 활동 지역 목록 조회
+   * @param userId 사용자 ID (Buffer)
+   */
+  async findByUserId(userId: Uint8Array) {
+    return await prisma.user_preferred_region.findMany({
+      where: {
+        user_id: userId as Uint8Array<ArrayBuffer>,
+      },
+      include: {
+        region: true,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  }
 
-//   /**
-//    * 사용자의 주요 활동 지역 개수 조회
-//    * @param userId 사용자 ID (Buffer)
-//    */
-//   async countByUserId(userId: Uint8Array): Promise<number> {
-//     return await prisma.user_preferred_region.count({
-//       where: {
-//         user_id: userId as Uint8Array<ArrayBuffer>,
-//       },
-//     });
-//   }
+  /**
+   * 사용자의 주요 활동 지역 개수 조회
+   * @param userId 사용자 ID (Buffer)
+   */
+  async countByUserId(userId: Uint8Array): Promise<number> {
+    return await prisma.user_preferred_region.count({
+      where: {
+        user_id: userId as Uint8Array<ArrayBuffer>,
+      },
+    });
+  }
 
   /**
    * 주요 활동 지역 추가
@@ -96,20 +96,20 @@
     });
   }
 
-//   /**
-//    * 지역 목록 검색 (시/도, 구/군으로)
-//    * @param city 시/도 (선택)
-//    * @param district 구/군 (선택)
-//    */
-//   async searchRegions(city?: string, district?: string) {
-//     return await prisma.region.findMany({
-//       where: {
-//         ...(city && { city: { contains: city } }),
-//         ...(district && { district: { contains: district } }),
-//       },
-//       orderBy: [{ city: 'asc' }, { district: 'asc' }],
-//     });
-//   }
-// }
+  /**
+   * 지역 목록 검색 (시/도, 구/군으로)
+   * @param city 시/도 (선택)
+   * @param district 구/군 (선택)
+   */
+  async searchRegions(city?: string, district?: string) {
+    return await prisma.region.findMany({
+      where: {
+        ...(city && { city: { contains: city } }),
+        ...(district && { district: { contains: district } }),
+      },
+      orderBy: [{ city: 'asc' }, { district: 'asc' }],
+    });
+  }
+}
 
-// export default new UserPreferredRegionRepository();
+export default new UserPreferredRegionRepository();
