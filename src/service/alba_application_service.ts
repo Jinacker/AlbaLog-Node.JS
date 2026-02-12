@@ -1,5 +1,6 @@
 import { findAlbaDetail,applyAlba} from "../repository/alba_application_repository";
-import { AlbaApplyRequestDto, AlbaApplyResponseDto, AlbaDetailResponseDto } from "../DTO/alba_application_dto";
+import { AlbaApplyResponseDto, AlbaDetailResponseDto } from "../DTO/alba_application_dto";
+import { bufferToUuid } from "../util/uuid_util";
 
 /**
  * 대타 아르바이트 정보 상세 조회 서비스
@@ -14,17 +15,18 @@ export const getAlbaDetail = async (albaId:string):Promise<AlbaDetailResponseDto
 
 /**
  * 대타 아르바이트 지원 서비스
- * @param albaId 
- * @param userId 
+ * @param albaBuffer 
+ * @param userBuffer
  * @returns 알바, 유저Id와 정산여부, 진행과정
  */
-export const postAlbaApplication = async(data:AlbaApplyRequestDto):Promise<AlbaApplyResponseDto>=>{
-    const {albaId,userId} = data
-    const result = await applyAlba(albaId,userId);
+export const postAlbaApplication = async(userBuffer:Buffer,albaBuffer:Buffer):Promise<AlbaApplyResponseDto>=>{
+    
+    const result = await applyAlba(userBuffer,albaBuffer);
+
 
     return {
-        albaId,
-        userId,
+        albaId:bufferToUuid(albaBuffer),
+        userId:bufferToUuid(userBuffer),
         processStatus:result.process_status,
         settlementStatus:result.settlement_status
     }
