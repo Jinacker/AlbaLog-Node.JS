@@ -146,6 +146,31 @@ class UserRepository {
       },
     });
   }
+
+  async setUserRegion(userId: Uint8Array<ArrayBufferLike>, regionCode: number[]): Promise<any> {
+    const isExist = await prisma.user_preferred_region.count({
+      where: {
+        user_id: userId as Uint8Array<ArrayBuffer>,
+      },
+    });
+
+    if (isExist > 0) {
+      return null;
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      return await Promise.all(
+        regionCode.map((code) =>
+          tx.user_preferred_region.create({
+            data: {
+              user_id: userId as Uint8Array<ArrayBuffer>,
+              region_id: code,
+            },
+          }),
+        ),
+      );
+    });
+  }
 }
 
 export default new UserRepository();

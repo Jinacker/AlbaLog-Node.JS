@@ -48,6 +48,7 @@ jobs:
           GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
           JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET
           JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET
+          KAKAO_REST_API_KEY=$KAKAO_REST_API_KEY
           END"
 
           ssh albalog "cat > /app/.mysql_env << END
@@ -61,6 +62,7 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET}}
           JWT_ACCESS_SECRET: ${{secrets.JWT_ACCESS_SECRET}}
           JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
+          KAKAO_REST_API_KEY: ${{secrets.KAKAO_REST_API_KEY}}
 
       - name: Compose Docker
         run: |

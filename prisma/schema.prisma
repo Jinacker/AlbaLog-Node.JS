@@ -62,9 +62,10 @@ model notification_setting {
 }
 
 model region {
-  region_id Bytes   @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
-  city      String? @db.VarChar(10)
-  district  String? @db.VarChar(10)
+  region_id             Int                     @id
+  city                  String?                 @db.VarChar(10)
+  district              String?                 @db.VarChar(10)
+  user_preferred_region user_preferred_region[]
 }
 
 model settlement_info {
@@ -114,22 +115,23 @@ model store_review {
 }
 
 model user {
-  user_id              Bytes                 @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
-  user_name            String?               @db.VarChar(20)
-  user_birth           DateTime?             @db.Timestamp(0)
-  gender               user_gender?
-  profile_image        String?               @db.VarChar(256)
-  income_goal          Int?
-  email                String                @unique(map: "user_pk") @db.VarChar(40)
-  refresh_token        String?               @unique(map: "user_pk_2") @db.VarChar(256)
-  income_log           income_log[]
-  notification         notification[]
-  notification_setting notification_setting?
-  settlement_info      settlement_info?
-  store_review         store_review[]
-  user_alba            user_alba[]
-  user_alba_schedule   user_alba_schedule[]
-  user_work_log        user_work_log[]
+  user_id               Bytes                   @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  user_name             String?                 @db.VarChar(20)
+  user_birth            DateTime?               @db.Timestamp(0)
+  gender                user_gender?
+  profile_image         String?                 @db.VarChar(256)
+  income_goal           Int?
+  email                 String                  @unique(map: "user_pk") @db.VarChar(40)
+  refresh_token         String?                 @unique(map: "user_pk_2") @db.VarChar(256)
+  income_log            income_log[]
+  notification          notification[]
+  notification_setting  notification_setting?
+  settlement_info       settlement_info?
+  store_review          store_review[]
+  user_alba             user_alba[]
+  user_alba_schedule    user_alba_schedule[]
+  user_preferred_region user_preferred_region[]
+  user_work_log         user_work_log[]
 }
 
 model user_alba {
@@ -163,15 +165,15 @@ model user_alba_schedule {
 model user_work_log {
   user_work_log_id      Bytes                 @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
   user_id               Bytes                 @db.Binary(16)
-  alba_id               Bytes                 @db.Binary(16)
-  user_alba_schedule_id Bytes                 @db.Binary(16)
+  alba_id               Bytes?                @db.Binary(16)
+  user_alba_schedule_id Bytes?                @db.Binary(16)
   work_date             DateTime?             @db.Date
   start_time            DateTime?             @db.DateTime(0)
   end_time              DateTime?             @db.DateTime(0)
   work_minutes          Int?
   status                user_work_log_status?
   income_log            income_log[]
-  alba_posting          alba_posting          @relation(fields: [alba_id], references: [alba_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_posting_TO_work_log")
+  alba_posting          alba_posting?         @relation(fields: [alba_id], references: [alba_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_posting_TO_work_log")
   user                  user                  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_work_log")
 
   @@index([alba_id], map: "FK_posting_TO_work_log")
@@ -186,6 +188,18 @@ model work_schedule {
   work_time    Float?       @db.Float
   day_of_week  String?      @db.Char(10)
   alba_posting alba_posting @relation(fields: [alba_id], references: [alba_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_posting_TO_work_schedule")
+}
+
+model user_preferred_region {
+  user_id    Bytes    @db.Binary(16)
+  region_id  Int
+  created_at DateTime @default(now()) @db.DateTime(0)
+  region     region   @relation(fields: [region_id], references: [region_id], onDelete: Cascade, map: "user_preferred_region_region_region_id_fk")
+  user       user     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, map: "FK_user_TO_preferred_region")
+
+  @@id([region_id, user_id])
+  @@index([region_id], map: "user_preferred_region_region_id_index")
+  @@index([user_id], map: "user_preferred_region_user_user_id_fk")
 }
 
 enum user_alba_process_status {

@@ -18,8 +18,7 @@ export interface AlbaDetailResponseDto{
 }
 
 export interface AlbaApplyRequestDto{
-    albaId:string,
-    userId:string
+    albaId:string
 }
 export interface AlbaApplyResponseDto{
     albaId:string,

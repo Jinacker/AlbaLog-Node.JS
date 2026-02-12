@@ -1,6 +1,8 @@
-import { Tags, Route,SuccessResponse,Response, Post, Body, Controller} from 'tsoa';
+import { Tags, Route,SuccessResponse,Response,Request, Post, Body, Controller, Security} from 'tsoa';
+import { Request as ExpressRequest } from 'express';
 import {StoreReviewRequestDto,StoreReviewResponseDto} from '../DTO/store_review_dto'
 import { addReview } from '../service/store_review_service';
+import { uuidToBuffer } from '../util/uuid_util';
 
 /**
  * 사용자가 평가하는 가게 리뷰 API
@@ -14,14 +16,19 @@ export class StoreReviewController extends Controller{
      * @returns 생성된 리뷰 정보 + 가게,유저명 반환
      */
     @Post()
+    @Security('jwt')
     @SuccessResponse('201','Created')
     @Response('400','Bad Request')
     @Response('500','Internal Server Error')
 
     public async createStoreReview(
+        @Request() req: ExpressRequest,
         @Body() requestBody:StoreReviewRequestDto
     ): Promise<StoreReviewResponseDto>{
-        const result = await addReview(requestBody);
+        const userId = (req.user as unknown as { id: string }).id;
+        const userBuffer=Buffer.from(uuidToBuffer(userId))
+        
+        const result = await addReview(userBuffer,requestBody);
         this.setStatus(201);
         return result;
     }
