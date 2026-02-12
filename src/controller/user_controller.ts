@@ -57,7 +57,7 @@ export class UserController extends Controller {
       );
     } else {
       req.res.redirect(
-        `http://localhost:5173/onboarding?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+        `http://localhost:5173/home?accessToken=${accessToken}&refreshToken=${refreshToken}`,
       );
     }
   }
