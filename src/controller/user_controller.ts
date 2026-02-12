@@ -29,7 +29,9 @@ export class UserController extends Controller {
    */
   @Get('/auth/google/callback')
   public async googleCallback(@Request() req: ExpressRequest): Promise<void> {
-    const { user_id, email } = req.user; // Passport Strategy에서 done(null, user)로 넘겨준 데이터
+    const { user_id, email, isNew } = req.user as any; // Passport Strategy에서 done(null, user)로 넘겨준 데이터
+
+    console.log(req.user);
 
     if (!user_id) {
       throw new UserNotFoundError();
@@ -48,9 +50,16 @@ export class UserController extends Controller {
     // 4. Access Token은 JSON 응답으로 보내거나 쿼리 파라미터로 리다이렉트
     // 프론트엔드 대시보드로 리다이렉트 시 예시:
     // 나중에 실제 주소로 리다이렉트 할 것
-    req.res.redirect(
-      `http://localhost:5173/onboarding?accessToken=${accessToken}&refreshToken=${refreshToken}`,
-    );
+
+    if (isNew) {
+      req.res.redirect(
+        `http://localhost:5173/signup?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+      );
+    } else {
+      req.res.redirect(
+        `http://localhost:5173/onboarding?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+      );
+    }
   }
 
   @Get('/info')

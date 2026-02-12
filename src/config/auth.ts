@@ -19,7 +19,7 @@ export const googleStrategy = new GoogleStrategy(
       });
 
       if (isExist) {
-        done(null, isExist);
+        done(null, { ...isExist, isNew: false });
       } else {
         const newUser = await prisma.user.create({
           data: {
@@ -29,7 +29,7 @@ export const googleStrategy = new GoogleStrategy(
           },
         });
 
-        done(null, newUser);
+        done(null, { ...newUser, isNew: true });
       }
     } catch (error) {
       done(error);
