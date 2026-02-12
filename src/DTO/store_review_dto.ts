@@ -1,5 +1,4 @@
 export interface StoreReviewRequestDto{
-    userId:string,
     storeId:string,
     kindness:number,
     communication:number,

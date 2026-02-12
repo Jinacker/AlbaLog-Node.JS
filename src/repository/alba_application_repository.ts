@@ -60,17 +60,14 @@ export const findAlbaDetail = async (albaId:string)=>{
 
 /**
  * 대타 아르바이트 지원 기능
- * @param data(albaId,userId)
+ * @param data(albaBuffer,userBuffer)
  */
-export const applyAlba= async(albaId:string,userId:string) =>{
-    //Id Buffer로 변환
-    const userBuffer=Buffer.from(userId.replace(/-/g,""),'hex');
-    const albaBuffer = Buffer.from(albaId.replace(/-/g,""),'hex');
+export const applyAlba= async(userBuffer:Buffer,albaBuffer:Buffer) =>{
 
     const result = await prisma.user_alba.create({
         data:{
-            user_id:userBuffer,
-            alba_id:albaBuffer,
+            user_id:new Uint8Array(userBuffer),
+            alba_id:new Uint8Array(albaBuffer),
             //승인이 아니므로 초기에는 waiting으로 설정
             process_status:'waiting',
             settlement_status:'waiting'
