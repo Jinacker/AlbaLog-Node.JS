@@ -17,9 +17,7 @@ class UserPreferredRegionService {
    * 사용자의 주요 활동 지역 목록 조회
    * @param userId 사용자 ID (Buffer)
    */
-  async getPreferredRegions(
-    userId: Uint8Array,
-  ): Promise<UserPreferredRegionResponseDto> {
+  async getPreferredRegions(userId: Uint8Array): Promise<UserPreferredRegionResponseDto> {
     const regions = await UserPreferredRegionRepository.findByUserId(userId);
 
     const regionDtos: RegionDto[] = regions.map((item) => ({
@@ -78,10 +76,7 @@ class UserPreferredRegionService {
    * @param userId 사용자 ID (Buffer)
    * @param regionId 지역 ID (number)
    */
-  async removePreferredRegion(
-    userId: Uint8Array,
-    regionId: number,
-  ): Promise<void> {
+  async removePreferredRegion(userId: Uint8Array, regionId: number): Promise<void> {
     // 등록된 지역인지 확인
     const exists = await UserPreferredRegionRepository.exists(userId, regionId);
     if (!exists) {
@@ -96,14 +91,8 @@ class UserPreferredRegionService {
    * @param city 시/도 (선택)
    * @param district 구/군 (선택)
    */
-  async searchRegions(
-    city?: string,
-    district?: string,
-  ): Promise<RegionListResponseDto> {
-    const regions = await UserPreferredRegionRepository.searchRegions(
-      city,
-      district,
-    );
+  async searchRegions(city?: string, district?: string): Promise<RegionListResponseDto> {
+    const regions = await UserPreferredRegionRepository.searchRegions(city, district);
 
     const regionDtos: RegionDto[] = regions.map((item) => ({
       regionId: item.region_id,

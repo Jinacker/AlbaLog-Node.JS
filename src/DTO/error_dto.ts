@@ -20,3 +20,9 @@ export class InvalidTokenError extends CustomError {
     super('INVALID_TOKEN', 401, message, data);
   }
 }
+
+export class UserRegionError extends CustomError {
+  constructor(message: string = 'User Region Error', data: any = null) {
+    super('USER_REGION_ERROR', 400, message, data);
+  }
+}
