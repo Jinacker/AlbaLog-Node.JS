@@ -61,8 +61,8 @@ class ScheduleService {
     startTime: string,
     endTime: string,
   ): { workDate: Date; startTime: Date | null; endTime: Date | null; workMinutes: number | null } {
-    // KST(+09:00) 오프셋을 명시하여 Prisma UTC 변환 시 날짜가 밀리지 않도록 처리
-    const date = new Date(workDate + 'T00:00:00+09:00');
+    // work_date는 Date 타입이므로 UTC midnight으로 저장하여 날짜가 밀리지 않도록 처리
+    const date = new Date(workDate + 'T00:00:00Z');
 
     const [sh, sm] = startTime.split(':').map(Number);
     const start = new Date(workDate + `T${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}:00+09:00`);

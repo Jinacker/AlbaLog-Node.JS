@@ -117,12 +117,11 @@ class WorkLogRepository {
       } | null;
     }[]
   > {
-    // 날짜 범위 설정 (해당 날짜의 00:00:00 ~ 23:59:59)
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    // KST 기준 오늘 날짜를 YYYY-MM-DD로 구한 뒤 UTC midnight 범위로 설정
+    const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+    const dateStr = kstDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+    const startOfDay = new Date(dateStr + 'T00:00:00Z');
+    const endOfDay = new Date(dateStr + 'T23:59:59.999Z');
 
     return await prisma.user_work_log.findMany({
       where: {
