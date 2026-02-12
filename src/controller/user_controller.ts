@@ -105,11 +105,9 @@ export class UserController extends Controller {
     @Request() req: ExpressRequest,
     @Body() body: UserRegisterParams,
   ): Promise<TsoaSuccessResponse<ResponseFromUser>> {
-    console.log(req.user);
     const userId = (req.user as unknown as { id: string }).id;
 
     const userInfo = await UserService.registerUser(userId, body);
-    console.log(userInfo);
 
     this.setStatus(201);
     return new TsoaSuccessResponse<ResponseFromUser>(userInfo);
@@ -134,6 +132,7 @@ export class UserController extends Controller {
 
     const result = await UserService.setUserRegion(userId, body.regionCode);
 
+    this.setStatus(201);
     return new TsoaSuccessResponse<ResponseFromInitialRegion>(result);
   }
 
