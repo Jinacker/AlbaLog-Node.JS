@@ -6,7 +6,7 @@
  * 지역 정보 응답
  */
 export interface RegionDto {
-  regionId: string;
+  regionId: number;
   city: string;
   district: string;
 }
@@ -23,7 +23,7 @@ export interface UserPreferredRegionResponseDto {
  * 주요 활동 지역 추가 요청
  */
 export interface AddPreferredRegionRequestDto {
-  regionId: string;
+  regionId: number;
 }
 
 /**
@@ -31,7 +31,7 @@ export interface AddPreferredRegionRequestDto {
  */
 export interface AddPreferredRegionResponseDto {
   userId: string;
-  regionId: string;
+  regionId: number;
   city: string;
   district: string;
   createdAt: string;
