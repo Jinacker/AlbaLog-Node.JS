@@ -52,8 +52,8 @@ function validateManual(body: CreateManualScheduleBody) {
 function parseScheduleToWorkLogData(workDate?: string, workTime?: string) {
   if (!workDate) return null;
 
-  // KST(+09:00) 오프셋을 명시하여 Prisma UTC 변환 시 날짜가 밀리지 않도록 처리
-  const date = new Date(workDate + 'T00:00:00+09:00');
+  // work_date는 Date 타입이므로 UTC midnight으로 저장하여 날짜가 밀리지 않도록 처리
+  const date = new Date(workDate + 'T00:00:00Z');
 
   let startTime: Date | null = null;
   let endTime: Date | null = null;
