@@ -11,3 +11,7 @@
 /dist
 /node_modules
 /src/generated/prisma
+
+#https
+/data
+/init-letsencrypt.sh
