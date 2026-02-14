@@ -26,3 +26,9 @@ export class UserRegionError extends CustomError {
     super('USER_REGION_ERROR', 400, message, data);
   }
 }
+
+export class NotificationNotFoundError extends CustomError {
+  constructor(message: string = 'No Notification', data: any = null) {
+    super('NO_NOTIFICATION', 404, message, data);
+  }
+}
