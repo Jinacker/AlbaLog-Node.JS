@@ -45,10 +45,14 @@ model income_log {
 }
 
 model notification {
-  notification_id Bytes   @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
-  user_id         Bytes   @db.Binary(16)
-  message         String? @db.Text
-  user            user    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_notification")
+  notification_id Bytes              @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
+  user_id         Bytes              @db.Binary(16)
+  message         String?            @db.Text
+  type            notification_type?
+  status          Boolean            @default(false)
+  created_at      DateTime?          @default(now()) @db.DateTime(0)
+  updated_at      DateTime?          @default(now()) @db.DateTime(0)
+  user            user               @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_notification")
 
   @@index([user_id], map: "FK_user_TO_notification")
 }
@@ -246,4 +250,10 @@ enum user_work_log_status {
   done
   settled
   absent
+}
+
+enum notification_type {
+  payment
+  work_time    @map("work time")
+  work_approve @map("work approve")
 }
