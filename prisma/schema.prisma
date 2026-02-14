@@ -254,6 +254,6 @@ enum user_work_log_status {
 
 enum notification_type {
   payment
-  work_time    @map("work time")
-  work_approve @map("work approve")
+  work_time
+  work_approve
 }
