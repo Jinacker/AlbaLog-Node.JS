@@ -7,7 +7,7 @@ export interface CreateManualScheduleBody {
   work_time?: string;
   day_of_week?: user_alba_schedule_day_of_week; // 실제 enum 타입으로 바꿔도 됨
   repeat_type?: user_alba_schedule_repeat_type; // 실제 enum 타입으로 바꿔도 됨
-  repeat_days?: string;
+  repeat_days?: string | null;
   hourly_wage?: number;
   memo?: string;
 }
@@ -18,7 +18,7 @@ export interface UpdateManualScheduleBody {
   work_time?: string;
   day_of_week?: user_alba_schedule_day_of_week; // 실제 enum 타입으로 바꿔도 됨
   repeat_type?: user_alba_schedule_repeat_type; // 실제 enum 타입으로 바꿔도 됨
-  repeat_days?: string;
+  repeat_days?: string | null;
   hourly_wage?: number;
   memo?: string;
 }

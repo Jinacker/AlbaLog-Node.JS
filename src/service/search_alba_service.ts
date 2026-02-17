@@ -7,7 +7,7 @@ import { formatDate,formatTime } from '../util/date_util';
  * @param params 
  * @returns 조건에 맞는 알바 리스트
  */
-export const getFilteredAlba = async (params:SearchAlbaRequestDto):Promise<SearchAlbaResponseDto[]>=>{
+export const getFilteredAlba = async (params:SearchAlbaRequestDto,userBuffer:Buffer):Promise<SearchAlbaResponseDto[]>=>{
     let storeCategoryId:number|undefined
     //문자로 받은 카테고리를 카테고리 id로 변환
     if(params.storeCategory){
@@ -20,7 +20,8 @@ export const getFilteredAlba = async (params:SearchAlbaRequestDto):Promise<Searc
 
     const posting = await findPostingByFilter({
         ...params,
-        storeCategoryId
+        storeCategoryId,
+        userBuffer
     })
     let result = posting
     //요청으로 들어온 시간과 공고 시간 비교

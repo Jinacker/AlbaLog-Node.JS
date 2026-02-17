@@ -2,7 +2,8 @@
 import {
   CreateManualScheduleBody,
   CreateFromAlbaBody,
-  UpdateManualScheduleBody,} from '../DTO/user_alba_schedule_dto';
+  UpdateManualScheduleBody,
+} from '../DTO/user_alba_schedule_dto';
 import { UserAlbaScheduleRepository } from '../repository/user_alba_schedule_repository';
 import { UserWorkLogRepository } from '../repository/user_work_log_repository';
 import { binToUuid } from '../util/uuid';
@@ -10,6 +11,8 @@ import { CustomError } from '../DTO/error_dto';
 
 const scheduleRepo = new UserAlbaScheduleRepository();
 const workLogRepo = new UserWorkLogRepository();
+
+type RepeatBody = Pick<CreateManualScheduleBody, 'repeat_type' | 'repeat_days'>;
 
 function toDateString(d: Date): string {
   // DB Date -> "YYYY-MM-DD"
@@ -29,17 +32,61 @@ function toTimeRangeString(start?: Date | null, end?: Date | null): string | und
   return `-${fmt(end!)}`;
 }
 
-function validateManual(body: CreateManualScheduleBody) {
-  // repeat 모순 검증
-  if (body.repeat_type && !body.repeat_days) {
-    throw new CustomError('400', 400, 'repeat_type이 있으면 repeat_days가 필요합니다.', null);
+const MASK7 = /^[01]{7}$/;
+
+function validateManual(body: RepeatBody) {
+  const rt = body.repeat_type;
+  const rd = body.repeat_days;
+
+  // 반복 설정 자체가 없으면 단발 일정
+  if (!rt) {
+    if (rd) {
+      throw new CustomError('400', 400, 'repeat_type 없이 repeat_days를 보낼 수 없습니다.', null);
+    }
+    return;
   }
-  if (!body.repeat_type && body.repeat_days) {
-    throw new CustomError('400', 400, 'repeat_days가 있으면 repeat_type이 필요합니다.', null);
+
+  // none/daily는 repeat_days 금지
+  if (rt === 'none' || rt === 'daily') {
+    if (rd) {
+      throw new CustomError('400', 400, `${rt}이면 repeat_days는 필요하지 않습니다.`, null);
+    }
+    return;
+  }
+
+  // weekly/biweekly는 repeat_days 필수
+  if (!rd) {
+    throw new CustomError('400', 400, `${rt}이면 repeat_days가 필요합니다.`, null);
+  }
+
+  // DB 저장 안정성 + 규격 강제 (VARCHAR(10) 안에서 안전)
+  if (rd.length > 10) {
+    throw new CustomError(
+      '400',
+      400,
+      'repeat_days가 너무 깁니다. 7자리 비트마스크만 허용합니다.',
+      null,
+    );
+  }
+  if (!MASK7.test(rd)) {
+    throw new CustomError(
+      '400',
+      400,
+      'repeat_days는 7자리 비트마스크(예: 1010100)여야 합니다.',
+      null,
+    );
+  }
+  if (!rd.includes('1')) {
+    throw new CustomError(
+      '400',
+      400,
+      'repeat_days에는 최소 1개 이상의 요일이 포함되어야 합니다.',
+      null,
+    );
   }
 }
 
-  function validateFromAlba(body: CreateFromAlbaBody) {
+function validateFromAlba(body: CreateFromAlbaBody) {
   if (!body.user_work_log_id) {
     throw new CustomError('400', 400, 'user_work_log_id가 필요합니다.', null);
   }
@@ -63,11 +110,15 @@ function parseScheduleToWorkLogData(workDate?: string, workTime?: string) {
     const [startStr, endStr] = workTime.split('-');
     if (startStr) {
       const [sh, sm] = startStr.split(':').map(Number);
-      startTime = new Date(workDate + `T${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}:00+09:00`);
+      startTime = new Date(
+        workDate + `T${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}:00+09:00`,
+      );
     }
     if (endStr) {
       const [eh, em] = endStr.split(':').map(Number);
-      endTime = new Date(workDate + `T${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}:00+09:00`);
+      endTime = new Date(
+        workDate + `T${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}:00+09:00`,
+      );
       // 야간 근무 (종료 시간이 시작 시간보다 이전)
       if (endTime <= startTime!) {
         endTime.setDate(endTime.getDate() + 1);
@@ -113,8 +164,7 @@ export async function createManual(
 }
 
 // 유저 알바 정보 기반 스케줄 생성
-  export async function createFromAlba(
-  userId: string, body: CreateFromAlbaBody): Promise<string> {
+export async function createFromAlba(userId: string, body: CreateFromAlbaBody): Promise<string> {
   validateFromAlba(body);
 
   const wl = await workLogRepo.findByIdAndUser(userId, body.user_work_log_id);
@@ -129,7 +179,7 @@ export async function createManual(
   const hourlyWage = wl.alba_posting?.hourly_rate ?? undefined;
   const workplace = wl.alba_posting?.store?.store_name ?? undefined;
 
-  const idBin = await scheduleRepo.create(userId,{
+  const idBin = await scheduleRepo.create(userId, {
     hourly_wage: hourlyWage,
     work_date: workDateStr,
     work_time: workTimeStr,
@@ -144,21 +194,41 @@ export async function update(
   scheduleId: string,
   body: UpdateManualScheduleBody,
 ): Promise<void> {
-  // PATCH인데 아무것도 안오면 400 처리
   const hasAnyField = Object.values(body).some((v) => v !== undefined);
   if (!hasAnyField) {
     throw new CustomError('EC400', 400, '수정할 값이 없습니다.', null);
   }
 
+  // 반복 관련 필드가 들어오면 기존 값과 합쳐서 검증
   if (body.repeat_type !== undefined || body.repeat_days !== undefined) {
-  validateManual(body);
-}
+    const existing = await scheduleRepo.findByIdAndUserId(userId, scheduleId);
+    if (!existing) {
+      throw new CustomError('EC404', 404, '스케줄을 찾을 수 없습니다.', null);
+    }
 
-  const updatedCount = await scheduleRepo.updateByIdAndUserId(
-    userId,
-    scheduleId,
-    body,
-  );
+    const nextRepeatType = body.repeat_type !== undefined ? body.repeat_type : existing.repeat_type;
+
+    const nextRepeatDays = body.repeat_days !== undefined ? body.repeat_days : existing.repeat_days;
+
+    // daily/none으로 바꾸면 repeat_days는 최종적으로 null로 간주
+    const normalizedRepeatDays =
+      nextRepeatType === 'daily' || nextRepeatType === 'none' ? null : nextRepeatDays;
+
+    // 최종값 계산
+    const merged: RepeatBody = {
+      repeat_type: nextRepeatType,
+      repeat_days: normalizedRepeatDays,
+    };
+
+    validateManual(merged);
+  }
+
+  const updateData: any = { ...body };
+  if (body.repeat_type === 'daily' || body.repeat_type === 'none') {
+    updateData.repeat_days = null; // 선택
+  }
+
+  const updatedCount = await scheduleRepo.updateByIdAndUserId(userId, scheduleId, updateData);
 
   if (updatedCount === 0) {
     throw new CustomError('EC404', 404, '스케줄을 찾을 수 없습니다.', null);

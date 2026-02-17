@@ -22,3 +22,7 @@ export interface StoreReviewResponseDto{
     createdAt:Date,
     updatedAt:Date
 }
+
+export interface StoreReviewDto {
+    reviews: StoreReviewResponseDto[]; 
+}

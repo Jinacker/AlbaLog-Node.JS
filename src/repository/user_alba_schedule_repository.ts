@@ -51,7 +51,12 @@ export class UserAlbaScheduleRepository {
   public async createWithWorkLog(
     userId: string,
     input: CreateUserAlbaScheduleRepoInput,
-    workLogData: { workDate: Date; startTime: Date | null; endTime: Date | null; workMinutes: number | null },
+    workLogData: {
+      workDate: Date;
+      startTime: Date | null;
+      endTime: Date | null;
+      workMinutes: number | null;
+    },
   ): Promise<Uint8Array> {
     const userIdBin = uuidToBin(userId);
 
@@ -89,6 +94,23 @@ export class UserAlbaScheduleRepository {
     });
 
     return schedule.user_alba_schedule_id;
+  }
+
+  public async findByIdAndUserId(userId: string, scheduleId: string) {
+    const userIdBin = uuidToBin(userId);
+    const scheduleIdBin = uuidToBin(scheduleId);
+
+    return prisma.user_alba_schedule.findFirst({
+      where: {
+        user_id: userIdBin,
+        user_alba_schedule_id: scheduleIdBin,
+      },
+      select: {
+        repeat_type: true,
+        repeat_days: true,
+        // merge 검증에 필요하면 더 추가 가능
+      },
+    });
   }
 
   public async updateByIdAndUserId(

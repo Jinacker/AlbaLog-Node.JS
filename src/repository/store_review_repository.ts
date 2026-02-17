@@ -46,3 +46,13 @@ export const createStoreReview = async (userBuffer:Buffer,storeBuffer:Buffer,dat
     updatedAt: result.updated_at 
 }
 }
+export const findReviewsByStoreId = async (storeId: Buffer) => {
+    return await prisma.store_review.findMany({
+        where: { store_id: new Uint8Array(storeId) },
+        include: {
+            user:true,
+            store:true
+        },
+        orderBy: { created_at: 'desc' } // 최신순 정렬
+    });
+};
