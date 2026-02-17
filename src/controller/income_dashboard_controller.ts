@@ -24,6 +24,7 @@ export class IncomeDashboardController extends Controller {
    * - incomeGoal: 사용자 수입 목표
    * - expectedIncome: 근무시간 × 시급 (정산 여부 무관)
    * - actualIncome: 정산 완료된 수입
+   * - incomeChangeRate: 전월 대비 수입 증감률 (%)
    * - breakdown: 브랜드별 실제 수입
    *
    * @param month 조회 월 (YYYY-MM), 생략 시 이번 달

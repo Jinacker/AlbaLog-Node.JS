@@ -9,8 +9,13 @@ export class IncomeDashboardService {
 
     const { start, end, normalizedMonth } = this.getMonthRange(month);
 
-    const [workLogs, userAlbas, user] = await Promise.all([
+    // 전월 month + range 계산
+    const previousMonth = this.getPreviousMonth(normalizedMonth);
+    const { start: prevStart, end: prevEnd } = this.getMonthRange(previousMonth);
+
+    const [workLogs, prevWorkLogs, userAlbas, user] = await Promise.all([
       incomeDashboardRepository.findWorkLogsForMonth(userIdBin, start, end),
+      incomeDashboardRepository.findWorkLogsForMonth(userIdBin, prevStart, prevEnd),
       incomeDashboardRepository.findUserAlbaSettlementStatuses(userIdBin),
       incomeDashboardRepository.findUserIncomeGoal(userIdBin),
     ]);
@@ -22,6 +27,31 @@ export class IncomeDashboardService {
       settlementMap.set(Buffer.from(ua.alba_id).toString('hex'), ua.settlement_status ?? null);
     }
 
+    const current = this.calculateMonthlyIncome(workLogs, settlementMap);
+    const prev = this.calculateMonthlyIncome(prevWorkLogs, settlementMap);
+
+    // 전월 대비 증감률(%)
+    // 전월 actualIncome이 0이면 0으로
+    const incomeChangeRate =
+      prev.actualIncome > 0
+        ? ((current.actualIncome - prev.actualIncome) / prev.actualIncome) * 100
+        : 0;
+
+    return {
+      month: normalizedMonth,
+      incomeGoal,
+      expectedIncome: current.expectedIncome,
+      actualIncome: current.actualIncome,
+      breakdown: current.breakdown,
+      incomeChangeRate,
+    };
+  }
+
+  // 월별 expected/actual/breakdown 계산 공통 함수
+  private calculateMonthlyIncome(
+    workLogs: any[],
+    settlementMap: Map<string, user_alba_settlement_status | null>,
+  ) {
     let expectedIncome = 0;
     let actualIncome = 0;
 
@@ -37,7 +67,6 @@ export class IncomeDashboardService {
       expectedIncome += income;
 
       const settlement = settlementMap.get(Buffer.from(log.alba_id).toString('hex')) ?? null;
-
       const isCompleted = settlement === user_alba_settlement_status.paid;
       if (!isCompleted) continue;
 
@@ -53,13 +82,15 @@ export class IncomeDashboardService {
       .map(([key, income]) => ({ key, income }))
       .sort((a, b) => b.income - a.income);
 
-    return {
-      month: normalizedMonth,
-      incomeGoal,
-      expectedIncome,
-      actualIncome,
-      breakdown,
-    };
+    return { expectedIncome, actualIncome, breakdown };
+  }
+
+  private getPreviousMonth(month: string): string {
+    const [year, mon] = month.split('-').map(Number);
+    const date = new Date(year, mon - 2); // 전월
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    return `${y}-${m}`;
   }
 
   private getMonthRange(month?: string) {

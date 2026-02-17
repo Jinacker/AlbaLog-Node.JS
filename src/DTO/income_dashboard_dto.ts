@@ -21,4 +21,6 @@ export interface IncomeDashboardResponseDTO {
 
   /** 브랜드별 실제 수입 분해표 (actualIncome 대상) */
   breakdown: IncomeBrandBreakdownDTO[];
+
+  incomeChangeRate: number; // 전월 대비 증감률 (%)
 }
