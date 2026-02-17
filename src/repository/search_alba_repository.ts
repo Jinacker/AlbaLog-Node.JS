@@ -3,7 +3,8 @@ import { SearchAlbaRequestDto, SearchAlbaResponseDto } from "../DTO/search_alba_
 import { bufferToUuid } from "../util/uuid_util";
 //id값으로 변경된 storeCategoryId 사용
 export interface SearchAlbaRepoParams extends SearchAlbaRequestDto{
-    storeCategoryId?:number
+    storeCategoryId?:number,
+    userBuffer?:Buffer
 }
 /**
  * 아르바이트 필터 명시 및 조회
@@ -11,9 +12,15 @@ export interface SearchAlbaRepoParams extends SearchAlbaRequestDto{
  * @returns 조건에 맞는 알바 리스트
  */
 export const findPostingByFilter = async(data:SearchAlbaRepoParams):Promise<SearchAlbaResponseDto[]>=>{
-    const {workDate,storeCategoryId,storeName,hourlyRate,} = data
+    const {workDate,storeCategoryId,storeName,hourlyRate,userBuffer} = data
     const result = await prisma.alba_posting.findMany({
         where:{
+            ...(userBuffer && {user_alba: {
+                    none: {
+                        user_id: new Uint8Array(userBuffer)
+                    }
+                }
+            }),
             ...(hourlyRate&&{hourly_rate:{gte:hourlyRate}}),
             store:{
                 ...(storeCategoryId&&{
