@@ -47,6 +47,10 @@ app.use('/', (req, res) => {
   res.redirect('https://albalog.vercel.app');
 });
 
+app.use('/income', (req, res) => {
+  res.redirect('https://albalog.vercel.app/income');
+});
+
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Server is running on port ${process.env.PORT || 3000}`);
 
