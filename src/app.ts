@@ -43,9 +43,9 @@ RegisterRoutes(app);
 // swagger 문서 경로
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerJson));
 
-// app.use('/', (req, res) => {
-//   res.send('Hello World!');
-// });
+app.use('/', (req, res) => {
+  res.redirect('https://albalog.vercel.app');
+});
 
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Server is running on port ${process.env.PORT || 3000}`);
