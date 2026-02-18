@@ -186,7 +186,7 @@ model user_work_log {
   income_log            income_log[]
   alba_posting          alba_posting?         @relation(fields: [alba_id], references: [alba_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_posting_TO_work_log")
   user                  user                  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_work_log")
-  user_alba_schedule    user_alba_schedule?   @relation(fields: [user_alba_schedule_id], references: [user_alba_schedule_id], onDelete: NoAction, onUpdate: NoAction, map: "user_work_log_user_alba_schedule_user_alba_schedule_id_fk")
+  user_alba_schedule    user_alba_schedule?   @relation(fields: [user_alba_schedule_id], references: [user_alba_schedule_id], onDelete: Cascade, map: "user_work_log_user_alba_schedule_user_alba_schedule_id_fk")
 
   @@index([alba_id], map: "FK_posting_TO_work_log")
   @@index([user_id], map: "FK_user_TO_work_log")
