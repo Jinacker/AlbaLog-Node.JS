@@ -44,7 +44,7 @@ RegisterRoutes(app);
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerJson));
 
 app.use('/', (req, res) => {
-  res.redirect('https://albalog.vercel.app');
+  res.redirect('https://albalog.vercel.app/home');
 });
 
 app.use('/income', (req, res) => {
