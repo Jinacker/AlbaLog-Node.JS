@@ -19,6 +19,49 @@ export interface CreateUserAlbaScheduleRepoInput {
 }
 
 export class UserAlbaScheduleRepository {
+
+    async listByUserId(userId: string, opts: { month?: string }) {
+    const userIdBin = uuidToBin(userId);
+
+    return prisma.user_alba_schedule.findMany({
+      where: {
+        user_id: userIdBin,
+        ...(opts.month
+          ? {
+              // work_date가 "YYYY-MM-DD" 문자열로 저장된 전제
+              work_date: { startsWith: opts.month },
+            }
+          : {}),
+      },
+      orderBy: [
+        { work_date: 'asc' }, // null이면 뒤로 가거나 앞에 올 수 있음(필요하면 null 필터)
+        { work_time: 'asc' },
+      ],
+    });
+  }
+
+    async findDetailByIdAndUserId(userId: string, scheduleId: string) {
+    const userIdBin = uuidToBin(userId);
+    const scheduleIdBin = uuidToBin(scheduleId);
+
+    return prisma.user_alba_schedule.findFirst({
+      where: {
+        user_id: userIdBin,
+        user_alba_schedule_id: scheduleIdBin,
+      },
+      select: {
+        user_alba_schedule_id: true,
+        workplace: true,
+        work_date: true,
+        work_time: true,
+        day_of_week: true,
+        repeat_type: true,
+        repeat_days: true,
+        hourly_wage: true,
+        memo: true,
+      },
+    });
+  }
   public async create(userId: string, input: CreateUserAlbaScheduleRepoInput): Promise<Uint8Array> {
     const created = await prisma.user_alba_schedule.create({
       data: {

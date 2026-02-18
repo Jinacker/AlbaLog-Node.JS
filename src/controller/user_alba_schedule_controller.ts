@@ -10,7 +10,9 @@ import {
   Request,
   Response,
   Security,
+  Query,
   Path,
+  Get
 } from 'tsoa';
 import { Request as ExpressRequest } from 'express';
 import { TsoaSuccessResponse, TsoaFailResponse } from '../config/response_interface';
@@ -38,6 +40,79 @@ export interface CreateScheduleSuccess {
 @Route('user/alba/schedule')
 @Tags('User Alba Schedule')
 export class UserAlbaScheduleController extends Controller {
+
+   /**
+   * 내 유저 알바 스케줄 목록 조회 (커서/사이즈 없음)
+   * 예) /user/alba/schedule?month=2026-02
+   */
+  @Security('jwt')
+  @Get('')
+  @SuccessResponse(200, '유저 알바 스케줄 목록 조회 성공')
+  @Response<TsoaFailResponse<any>>(401, 'Unauthorized', {
+    resultType: 'FAIL' as any,
+    error: { errorCode: 'EC401', errorMessage: '인증이 필요합니다.', data: null },
+    success: null,
+  })
+  @Response<TsoaFailResponse<any>>(400, 'Bad Request', {
+    resultType: 'FAIL' as any,
+    error: { errorCode: 'EC400', errorMessage: '조회 요청이 부적절합니다.', data: null },
+    success: null,
+  })
+  @Response<TsoaFailResponse<any>>(500, 'Internal Server Error', {
+    resultType: 'FAIL' as any,
+    error: { errorCode: 'EC500', errorMessage: '서버 오류가 발생했습니다.', data: null },
+    success: null,
+  })
+  public async listMySchedules(
+    @Request() req: ExpressRequest,
+    @Query() month?: string, // "YYYY-MM"
+  ): Promise<TsoaSuccessResponse<any>> {
+    const userUuid = (req as any).user?.id as string;
+
+    console.log("token userId =", userUuid);
+    console.log("month =", month);
+
+    const data = await userAlbaScheduleService.listMySchedules(userUuid, { month });
+
+    this.setStatus(200);
+    return new TsoaSuccessResponse(data);
+  }
+
+  /**
+   * 내 유저 알바 스케줄 단건 조회(상세)
+   */
+  @Security('jwt')
+  @Get('{userAlbaScheduleId}')
+  @SuccessResponse(200, '유저 알바 스케줄 단건 조회 성공')
+  @Response<TsoaFailResponse<any>>(401, 'Unauthorized', {
+    resultType: 'FAIL' as any,
+    error: { errorCode: 'EC401', errorMessage: '인증이 필요합니다.', data: null },
+    success: null,
+  })
+  @Response<TsoaFailResponse<any>>(404, 'Not Found', {
+    resultType: 'FAIL' as any,
+    error: { errorCode: 'EC404', errorMessage: '스케줄을 찾을 수 없습니다.', data: null },
+    success: null,
+  })
+  @Response<TsoaFailResponse<any>>(500, 'Internal Server Error', {
+    resultType: 'FAIL' as any,
+    error: { errorCode: 'EC500', errorMessage: '서버 오류가 발생했습니다.', data: null },
+    success: null,
+  })
+  public async getMySchedule(
+    @Request() req: ExpressRequest,
+    @Path() userAlbaScheduleId: string,
+  ): Promise<TsoaSuccessResponse<any>> {
+    const userUuid = (req as any).user?.id as string;
+
+    const schedule = await userAlbaScheduleService.getMyScheduleById(userUuid, userAlbaScheduleId);
+
+    this.setStatus(200);
+    return new TsoaSuccessResponse(schedule);
+  }
+
+
+
   /*
    * 유저 알바 스케줄 등록 API
    * @param request - Express 요청 객체

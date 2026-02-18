@@ -14,6 +14,9 @@ const workLogRepo = new UserWorkLogRepository();
 
 type RepeatBody = Pick<CreateManualScheduleBody, 'repeat_type' | 'repeat_days'>;
 
+const YM = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+
 function toDateString(d: Date): string {
   // DB Date -> "YYYY-MM-DD"
   const y = d.getFullYear();
@@ -33,6 +36,13 @@ function toTimeRangeString(start?: Date | null, end?: Date | null): string | und
 }
 
 const MASK7 = /^[01]{7}$/;
+
+function validateMonth(month?: string) {
+  if (!month) return;
+  if (!YM.test(month)) {
+    throw new CustomError('EC400', 400, 'month는 YYYY-MM 형식이어야 합니다.', null);
+  }
+}
 
 function validateManual(body: RepeatBody) {
   const rt = body.repeat_type;
@@ -130,6 +140,45 @@ function parseScheduleToWorkLogData(workDate?: string, workTime?: string) {
   }
 
   return { workDate: date, startTime, endTime, workMinutes };
+}
+
+// 유저 알바 스케줄 서비스 목록 조회
+export async function listMySchedules(userId: string, q: { month?: string }) {
+  validateMonth(q.month);
+
+  const rows = await scheduleRepo.listByUserId(userId, { month: q.month });
+
+  const schedules = rows.map((s: any) => ({
+    user_alba_schedule_id: binToUuid(s.user_alba_schedule_id),
+    workplace: s.workplace ?? null,
+    work_date: s.work_date ?? null,
+    work_time: s.work_time ?? null,
+    day_of_week: s.day_of_week ?? null,
+    repeat_type: s.repeat_type ?? null,
+    repeat_days: s.repeat_days ?? null,
+    hourly_wage: s.hourly_wage ?? null,
+    memo: s.memo ?? null,
+  }));
+
+  return { schedules };
+}
+
+/** 단건 조회 */
+export async function getMyScheduleById(userId: string, scheduleId: string) {
+  const s = await scheduleRepo.findDetailByIdAndUserId(userId, scheduleId);
+  if (!s) throw new CustomError('EC404', 404, '스케줄을 찾을 수 없습니다.', null);
+
+  return {
+    user_alba_schedule_id: binToUuid(s.user_alba_schedule_id as unknown as Uint8Array),
+    workplace: s.workplace ?? null,
+    work_date: s.work_date ?? null,
+    work_time: s.work_time ?? null,
+    day_of_week: s.day_of_week ?? null,
+    repeat_type: s.repeat_type ?? null,
+    repeat_days: s.repeat_days ?? null,
+    hourly_wage: s.hourly_wage ?? null,
+    memo: s.memo ?? null,
+  };
 }
 
 // 유저 수동 입력 스케줄 생성
