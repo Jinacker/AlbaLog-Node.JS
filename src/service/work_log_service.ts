@@ -80,10 +80,12 @@ class WorkLogService {
 
       let address = '';
       let category = '';
+      let workplaceName: string | null = null;
 
       if (log.user_alba_schedule) {
         address = log.user_alba_schedule.address || '';
         category = log.user_alba_schedule.category || '';
+        workplaceName = log.user_alba_schedule.workplace_name || null;
       }
 
       const totalWage = Math.round(hourlyWage * workHours);
@@ -93,6 +95,7 @@ class WorkLogService {
         workLogId: bufferToUuid(log.user_work_log_id),
         storeId,
         status,
+        workplaceName,
         statusLabel: STATUS_LABELS[status] || '알 수 없음',
         workplace,
         startTime,

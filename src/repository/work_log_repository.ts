@@ -119,6 +119,7 @@ class WorkLogRepository {
       user_alba_schedule: {
         address: string | null;
         category: string | null;
+        workplace_name: string | null;
       } | null;
     }[]
   > {
@@ -152,6 +153,7 @@ class WorkLogRepository {
           select: {
             address: true,
             category: true,
+            workplace_name: true,
           },
         },
       },
