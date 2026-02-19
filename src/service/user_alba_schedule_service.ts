@@ -151,6 +151,8 @@ export async function listMySchedules(userId: string, q: { month?: string }) {
   const schedules = rows.map((s: any) => ({
     user_alba_schedule_id: binToUuid(s.user_alba_schedule_id),
     workplace: s.workplace ?? null,
+    workplace_name: s.workplace_name ?? null,
+    workplace_color: s.workplace_color ?? null,
     work_date: s.work_date ?? null,
     work_time: s.work_time ?? null,
     day_of_week: s.day_of_week ?? null,
@@ -164,22 +166,24 @@ export async function listMySchedules(userId: string, q: { month?: string }) {
 }
 
 /** 단건 조회 */
-export async function getMyScheduleById(userId: string, scheduleId: string) {
-  const s = await scheduleRepo.findDetailByIdAndUserId(userId, scheduleId);
-  if (!s) throw new CustomError('EC404', 404, '스케줄을 찾을 수 없습니다.', null);
+// export async function getMyScheduleById(userId: string, scheduleId: string) {
+//   const s = await scheduleRepo.findDetailByIdAndUserId(userId, scheduleId);
+//   if (!s) throw new CustomError('EC404', 404, '스케줄을 찾을 수 없습니다.', null);
 
-  return {
-    user_alba_schedule_id: binToUuid(s.user_alba_schedule_id as unknown as Uint8Array),
-    workplace: s.workplace ?? null,
-    work_date: s.work_date ?? null,
-    work_time: s.work_time ?? null,
-    day_of_week: s.day_of_week ?? null,
-    repeat_type: s.repeat_type ?? null,
-    repeat_days: s.repeat_days ?? null,
-    hourly_wage: s.hourly_wage ?? null,
-    memo: s.memo ?? null,
-  };
-}
+//   return {
+//     user_alba_schedule_id: binToUuid(s.user_alba_schedule_id as unknown as Uint8Array),
+//     workplace: s.workplace ?? null,
+//     work_date: s.work_date ?? null,
+//     work_time: s.work_time ?? null,
+//     workplace_name: s.workplace_name ?? null,
+//     workplace_color: s.workplace_color ?? null,
+//     day_of_week: s.day_of_week ?? null,
+//     repeat_type: s.repeat_type ?? null,
+//     repeat_days: s.repeat_days ?? null,
+//     hourly_wage: s.hourly_wage ?? null,
+//     memo: s.memo ?? null,
+//   };
+// }
 
 // 유저 수동 입력 스케줄 생성
 export async function createManual(
@@ -190,6 +194,8 @@ export async function createManual(
 
   const scheduleInput = {
     workplace: body.workplace,
+    workplace_name: body.workplace_name,
+    workplace_color: body.workplace_color,
     work_date: body.work_date,
     work_time: body.work_time,
     day_of_week: body.day_of_week,

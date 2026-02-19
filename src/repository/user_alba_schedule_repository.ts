@@ -9,6 +9,8 @@ export interface CreateUserAlbaScheduleRepoInput {
   workplace?: string;
   work_date?: string;
   work_time?: string;
+  workplace_name?: string;
+  workplace_color?: string;
 
   day_of_week?: user_alba_schedule_day_of_week;
   repeat_type?: user_alba_schedule_repeat_type;
@@ -52,6 +54,8 @@ export class UserAlbaScheduleRepository {
       select: {
         user_alba_schedule_id: true,
         workplace: true,
+        workplace_name: true,
+        workplace_color: true,
         work_date: true,
         work_time: true,
         day_of_week: true,
@@ -68,6 +72,8 @@ export class UserAlbaScheduleRepository {
         user_id: uuidToBin(userId),
 
         workplace: input.workplace ?? null,
+        workplace_name: input.workplace_name ?? null, 
+        workplace_color: input.workplace_color ?? null,
         work_date: input.work_date ?? null,
         work_time: input.work_time ?? null,
 
@@ -109,6 +115,8 @@ export class UserAlbaScheduleRepository {
         data: {
           user_id: userIdBin,
           workplace: input.workplace ?? null,
+          workplace_name: input.workplace_name ?? null,
+          workplace_color: input.workplace_color ?? null,
           work_date: input.work_date ?? null,
           work_time: input.work_time ?? null,
           day_of_week: input.day_of_week ?? null,
@@ -169,6 +177,8 @@ export class UserAlbaScheduleRepository {
       data: {
         workplace: body.workplace,
         work_date: body.work_date,
+        workplace_name: body.workplace_name, // ✅ [CHANGED]
+        workplace_color: body.workplace_color,
         work_time: body.work_time,
 
         day_of_week: body.day_of_week,

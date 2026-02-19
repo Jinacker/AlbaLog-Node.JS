@@ -5,6 +5,8 @@ export interface CreateManualScheduleBody {
   workplace?: string;
   work_date?: string;
   work_time?: string;
+  workplace_name?: string;
+  workplace_color?: string;
   day_of_week?: user_alba_schedule_day_of_week; // 실제 enum 타입으로 바꿔도 됨
   repeat_type?: user_alba_schedule_repeat_type; // 실제 enum 타입으로 바꿔도 됨
   repeat_days?: string | null;
@@ -16,6 +18,8 @@ export interface UserAlbaScheduleItemDTO {
   workplace?: string;
   work_date?: string;
   work_time?: string;
+  workplace_name?: string;
+  workplace_color?: string;
   day_of_week?: user_alba_schedule_day_of_week; // 실제 enum 타입으로 바꿔도 됨
   repeat_type?: user_alba_schedule_repeat_type; // 실제 enum 타입으로 바꿔도 됨
   repeat_days?: string | null;
@@ -27,6 +31,8 @@ export interface UpdateManualScheduleBody {
   workplace?: string;
   work_date?: string;
   work_time?: string;
+  workplace_name?: string;
+  workplace_color?: string;
   day_of_week?: user_alba_schedule_day_of_week; // 실제 enum 타입으로 바꿔도 됨
   repeat_type?: user_alba_schedule_repeat_type; // 실제 enum 타입으로 바꿔도 됨
   repeat_days?: string | null;

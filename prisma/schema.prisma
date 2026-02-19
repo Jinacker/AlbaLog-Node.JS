@@ -167,6 +167,8 @@ model user_alba_schedule {
   memo                  String?                         @db.VarChar(256)
   address               String?                         @db.Text
   category              String?                         @db.Text
+  workplace_name        String?                         @db.VarChar(100)
+  workplace_color       String?                         @db.VarChar(7)
   user                  user                            @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_alba_schedule")
   user_work_log         user_work_log[]
 

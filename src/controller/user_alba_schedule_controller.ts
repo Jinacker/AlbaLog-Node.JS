@@ -81,35 +81,35 @@ export class UserAlbaScheduleController extends Controller {
   /**
    * 내 유저 알바 스케줄 단건 조회(상세)
    */
-  @Security('jwt')
-  @Get('{userAlbaScheduleId}')
-  @SuccessResponse(200, '유저 알바 스케줄 단건 조회 성공')
-  @Response<TsoaFailResponse<any>>(401, 'Unauthorized', {
-    resultType: 'FAIL' as any,
-    error: { errorCode: 'EC401', errorMessage: '인증이 필요합니다.', data: null },
-    success: null,
-  })
-  @Response<TsoaFailResponse<any>>(404, 'Not Found', {
-    resultType: 'FAIL' as any,
-    error: { errorCode: 'EC404', errorMessage: '스케줄을 찾을 수 없습니다.', data: null },
-    success: null,
-  })
-  @Response<TsoaFailResponse<any>>(500, 'Internal Server Error', {
-    resultType: 'FAIL' as any,
-    error: { errorCode: 'EC500', errorMessage: '서버 오류가 발생했습니다.', data: null },
-    success: null,
-  })
-  public async getMySchedule(
-    @Request() req: ExpressRequest,
-    @Path() userAlbaScheduleId: string,
-  ): Promise<TsoaSuccessResponse<any>> {
-    const userUuid = (req as any).user?.id as string;
+  // @Security('jwt')
+  // @Get('{userAlbaScheduleId}')
+  // @SuccessResponse(200, '유저 알바 스케줄 단건 조회 성공')
+  // @Response<TsoaFailResponse<any>>(401, 'Unauthorized', {
+  //   resultType: 'FAIL' as any,
+  //   error: { errorCode: 'EC401', errorMessage: '인증이 필요합니다.', data: null },
+  //   success: null,
+  // })
+  // @Response<TsoaFailResponse<any>>(404, 'Not Found', {
+  //   resultType: 'FAIL' as any,
+  //   error: { errorCode: 'EC404', errorMessage: '스케줄을 찾을 수 없습니다.', data: null },
+  //   success: null,
+  // })
+  // @Response<TsoaFailResponse<any>>(500, 'Internal Server Error', {
+  //   resultType: 'FAIL' as any,
+  //   error: { errorCode: 'EC500', errorMessage: '서버 오류가 발생했습니다.', data: null },
+  //   success: null,
+  // })
+  // public async getMySchedule(
+  //   @Request() req: ExpressRequest,
+  //   @Path() userAlbaScheduleId: string,
+  // ): Promise<TsoaSuccessResponse<any>> {
+  //   const userUuid = (req as any).user?.id as string;
 
-    const schedule = await userAlbaScheduleService.getMyScheduleById(userUuid, userAlbaScheduleId);
+  //   //const schedule = await userAlbaScheduleService.getMyScheduleById(userUuid, userAlbaScheduleId);
 
-    this.setStatus(200);
-    return new TsoaSuccessResponse(schedule);
-  }
+  //   this.setStatus(200);
+  //  // return new TsoaSuccessResponse(schedule);
+  // }
 
 
 
