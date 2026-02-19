@@ -29,13 +29,27 @@ class WorkRepository {
     // UUID 문자열을 Buffer로 변환 (하이픈 제거 후 16바이트 바이너리)
     const userIdBuffer = Buffer.from(userId.replace(/-/g, ''), 'hex');
 
-    // 오늘 요일과 일치하거나 매일 반복되는 스케줄 조회
+    // 오늘 날짜 문자열 (YYYY-MM-DD, 로컬 시간 기준)
+    const now = new Date();
+    const todayDateStr = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    // repeat_days 비트마스크에서 오늘 인덱스 (SUN=0, MON=1, ..., SAT=6)
+    const todayBitIndex = now.getDay();
+
+    // 오늘 해당할 수 있는 모든 스케줄 후보 조회
     const schedules = await prisma.user_alba_schedule.findMany({
       where: {
         user_id: userIdBuffer,
         OR: [
-          { day_of_week: todayDayOfWeek as user_alba_schedule_day_of_week }, // 오늘 요일과 일치
-          { repeat_type: 'daily' },               // 매일 반복
+          { repeat_type: 'daily' },                                              // 매일 반복
+          { day_of_week: todayDayOfWeek as user_alba_schedule_day_of_week },     // 요일 직접 지정
+          { repeat_type: 'weekly' },                                              // 주간 반복 (비트마스크로 후처리)
+          { repeat_type: 'biweekly' },                                            // 격주 반복 (비트마스크로 후처리)
+          { work_date: todayDateStr },                                            // 일회성 일정 (오늘 날짜)
         ],
       },
     });
@@ -45,7 +59,25 @@ class WorkRepository {
     today.setHours(0, 0, 0, 0);
 
     return schedules
-      .filter((schedule) => schedule.work_time && schedule.hourly_wage)
+      .filter((schedule) => {
+        if (!schedule.work_time || !schedule.hourly_wage) return false;
+
+        const rt = schedule.repeat_type;
+
+        // 매일 반복
+        if (rt === 'daily') return true;
+
+        // 요일 직접 지정
+        if (schedule.day_of_week === todayDayOfWeek) return true;
+
+        // 주간/격주: repeat_days 비트마스크로 오늘 포함 여부 확인
+        if ((rt === 'weekly' || rt === 'biweekly') && schedule.repeat_days) {
+          return schedule.repeat_days[todayBitIndex] === '1';
+        }
+
+        // 일회성(none 또는 repeat_type 없음): work_date가 오늘인지 확인
+        return schedule.work_date === todayDateStr;
+      })
       .map((schedule) => {
         const { startTime, endTime } = this.parseWorkTime(
           schedule.work_time!,
