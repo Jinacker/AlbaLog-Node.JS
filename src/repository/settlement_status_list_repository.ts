@@ -77,6 +77,13 @@ export class SettlementStatusListRepository {
             },
           },
         },
+        // ✅ 추가: "유저 알바 일정"에서 채울 정보
+        user_alba_schedule: {
+          select: {
+            workplace_name: true,
+            hourly_wage: true,
+          },
+        },
       },
     });
 
@@ -84,10 +91,11 @@ export class SettlementStatusListRepository {
     const pageLogs = hasNext ? logs.slice(0, take) : logs;
 
     const items = pageLogs.map((log) => {
-      const storeName = log.alba_posting?.store?.store_name ?? '';
+      const storeName =
+        log.alba_posting?.store?.store_name ?? log.user_alba_schedule?.workplace_name ?? '';
       const workMinutes = log.work_minutes ?? 0;
 
-      const hourlyRate = log.alba_posting?.hourly_rate ?? 0;
+      const hourlyRate = log.alba_posting?.hourly_rate ?? log.user_alba_schedule?.hourly_wage ?? 0;
       // work_minutes*hourly_rate/60
       const expectedIncome = Math.floor((hourlyRate * workMinutes) / 60);
 
