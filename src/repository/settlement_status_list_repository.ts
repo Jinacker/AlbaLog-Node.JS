@@ -77,7 +77,7 @@ export class SettlementStatusListRepository {
             },
           },
         },
-        // ✅ 추가: "유저 알바 일정"에서 채울 정보
+        //"유저 알바 일정"에서 채울 정보
         user_alba_schedule: {
           select: {
             workplace_name: true,
@@ -100,11 +100,22 @@ export class SettlementStatusListRepository {
       const expectedIncome = Math.floor((hourlyRate * workMinutes) / 60);
 
       // income_log가 여러개면 합산 (보너스 등)
-      const amount = (log.income_log ?? []).reduce((sum, x) => sum + (x.amount ?? 0), 0);
-
+      const rawAmount = (log.income_log ?? []).reduce((sum, x) => sum + (x.amount ?? 0), 0);
       const settlementStatus =
-        (log.alba_posting?.user_alba?.[0]?.settlement_status as SettlementStatusDb | undefined) ??
-        'unpaid';
+        log.status === 'settled'
+          ? 'paid'
+          : (log.alba_posting?.user_alba?.[0]?.settlement_status ?? 'unpaid');
+
+      let amount = 0;
+      if (settlementStatus === 'paid') {
+        if (log.alba_posting) {
+          // 알바 공고 기반 → income_log 사용
+          amount = rawAmount;
+        } else {
+          // 일정 기반 → 예상 수입 사용
+          amount = expectedIncome;
+        }
+      }
 
       return {
         work_date: log.work_date ? log.work_date.toISOString().slice(0, 10) : null,
