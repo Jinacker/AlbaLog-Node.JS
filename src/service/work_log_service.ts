@@ -61,10 +61,12 @@ class WorkLogService {
       );
 
       // alba_posting이 있으면 사용, 없으면 schedule에서 fallback
+      let storeId: string | null = null;
       let workplace = '';
       let hourlyWage = 0;
 
       if (log.alba_posting) {
+        storeId = bufferToUuid(log.alba_posting.store.store_id);
         workplace = log.alba_posting.store.store_name || '';
         hourlyWage = log.alba_posting.hourly_rate || 0;
       } else if (log.user_alba_schedule_id) {
@@ -89,6 +91,7 @@ class WorkLogService {
 
       return {
         workLogId: bufferToUuid(log.user_work_log_id),
+        storeId,
         status,
         statusLabel: STATUS_LABELS[status] || '알 수 없음',
         workplace,
