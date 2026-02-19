@@ -112,12 +112,14 @@ class WorkLogRepository {
       alba_posting: {
         hourly_rate: number | null;
         store: {
+          store_id: Uint8Array;
           store_name: string | null;
         };
       } | null;
       user_alba_schedule: {
         address: string | null;
         category: string | null;
+        workplace_name: string | null;
       } | null;
     }[]
   > {
@@ -141,6 +143,7 @@ class WorkLogRepository {
             hourly_rate: true,
             store: {
               select: {
+                store_id: true,
                 store_name: true,
               },
             },
@@ -150,6 +153,7 @@ class WorkLogRepository {
           select: {
             address: true,
             category: true,
+            workplace_name: true,
           },
         },
       },

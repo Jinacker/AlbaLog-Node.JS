@@ -3,9 +3,11 @@
  */
 export interface TodayScheduleResponseDto {
   workLogId: string;
+  storeId: string | null; // 알바 공고 기반 근무의 근무지 ID (수동 등록 시 null)
   status: 'scheduled' | 'working' | 'done' | 'settled' | 'absent';
   statusLabel: string; // "예정", "근무 중", "근무 완료", "정산 완료", "결근"
   workplace: string; // "CU 홍대 점"
+  workplaceName: string | null; // 근무지 별칭 (사용자 지정 이름)
   startTime: string; // "14:00"
   endTime: string; // "18:00"
   workHours: number; // 4
