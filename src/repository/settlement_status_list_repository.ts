@@ -39,19 +39,26 @@ export class SettlementStatusListRepository {
     // where: 내 근무기록
     const where: Prisma.user_work_logWhereInput = {
       user_id: userIdBin,
-      ...(settlementStatus
-        ? {
-            // user_work_log -> alba_posting -> user_alba (복합 PK) 기준으로 상태 필터
-            alba_posting: {
-              user_alba: {
-                some: {
-                  user_id: userIdBin,
-                  settlement_status: settlementStatus,
+      AND: [
+        // 공고(알바 포스팅) 기반만
+        { alba_posting: { isNot: null } },
+
+        //
+        ...(settlementStatus
+          ? [
+              {
+                alba_posting: {
+                  user_alba: {
+                    some: {
+                      user_id: userIdBin,
+                      settlement_status: settlementStatus,
+                    },
+                  },
                 },
               },
-            },
-          }
-        : {}),
+            ]
+          : []),
+      ],
     };
 
     const take = Math.min(Math.max(size, 1), 20); // 안전장치
@@ -77,7 +84,7 @@ export class SettlementStatusListRepository {
             },
           },
         },
-        // ✅ 추가: "유저 알바 일정"에서 채울 정보
+        //"유저 알바 일정"에서 채울 정보
         user_alba_schedule: {
           select: {
             workplace_name: true,

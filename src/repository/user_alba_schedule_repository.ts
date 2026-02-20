@@ -21,8 +21,7 @@ export interface CreateUserAlbaScheduleRepoInput {
 }
 
 export class UserAlbaScheduleRepository {
-
-    async listByUserId(userId: string, opts: { month?: string }) {
+  async listByUserId(userId: string, opts: { month?: string }) {
     const userIdBin = uuidToBin(userId);
 
     return prisma.user_alba_schedule.findMany({
@@ -42,7 +41,7 @@ export class UserAlbaScheduleRepository {
     });
   }
 
-    async findDetailByIdAndUserId(userId: string, scheduleId: string) {
+  async findDetailByIdAndUserId(userId: string, scheduleId: string) {
     const userIdBin = uuidToBin(userId);
     const scheduleIdBin = uuidToBin(scheduleId);
 
@@ -72,7 +71,7 @@ export class UserAlbaScheduleRepository {
         user_id: uuidToBin(userId),
 
         workplace: input.workplace ?? null,
-        workplace_name: input.workplace_name ?? null, 
+        workplace_name: input.workplace_name ?? null,
         workplace_color: input.workplace_color ?? null,
         work_date: input.work_date ?? null,
         work_time: input.work_time ?? null,
@@ -116,7 +115,7 @@ export class UserAlbaScheduleRepository {
           user_id: userIdBin,
           workplace: input.workplace ?? null,
           workplace_name: input.workplace_name ?? null,
-          workplace_color: input.workplace_color ?? null,
+          workplace_color: input.workplace_color ?? '#EF4444',
           work_date: input.work_date ?? null,
           work_time: input.work_time ?? null,
           day_of_week: input.day_of_week ?? null,
