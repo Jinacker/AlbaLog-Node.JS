@@ -100,11 +100,14 @@ export class SettlementStatusListRepository {
       const expectedIncome = Math.floor((hourlyRate * workMinutes) / 60);
 
       // income_log가 여러개면 합산 (보너스 등)
-      const amount = (log.income_log ?? []).reduce((sum, x) => sum + (x.amount ?? 0), 0);
-
+      //const amount = (log.income_log ?? []).reduce((sum, x) => sum + (x.amount ?? 0), 0);
+      let amount = expectedIncome;
       const settlementStatus =
         (log.alba_posting?.user_alba?.[0]?.settlement_status as SettlementStatusDb | undefined) ??
         'unpaid';
+amount = (settlementStatus === 'unpaid' || settlementStatus === 'waiting')
+  ? 0
+  : expectedIncome;
 
       return {
         work_date: log.work_date ? log.work_date.toISOString().slice(0, 10) : null,
